@@ -1,0 +1,10 @@
+{
+  "name": "ta-leadership-global-search",
+  "version": "1.0.0",
+  "description": "TA Leadership Global Search — live jobs, Boolean X-ray, country resumes",
+  "private": true,
+  "scripts": {
+    "start": "npx --yes serve -l 3000 .",
+    "serve": "npx --yes serve -l 3000 ."
+  }
+}

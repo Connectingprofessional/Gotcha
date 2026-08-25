@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.vercel/
+.output/
+
+# Env files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor/OS
+.DS_Store
+.vscode/
+.idea/
+
+# TanStack / router generated (regenerated on build, keep if you prefer committing it)
+# src/routeTree.gen.ts
+
+# Test/coverage
+coverage/

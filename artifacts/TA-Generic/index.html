@@ -1,0 +1,4267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="description" content="TA Job Search Hub – AI Job Search & Intelligence for Talent Acquisition Professionals" />
+  <title>TA Job Search Hub | AI Job Search & Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   TA Job Search Hub – Modern AI Job Search Dashboard
+   Exact visual match to provided design
+   ============================================================ */
+
+:root {
+  --sidebar-bg: #0f172a;
+  --sidebar-width: 260px;
+  --primary: #7c3aed;
+  --primary-hover: #6d28d9;
+  --primary-light: #ede9fe;
+  --accent: #8b5cf6;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --blue: #3b82f6;
+  --orange: #f97316;
+  --teal: #14b8a6;
+  --violet: #8b5cf6;
+  --radius: 12px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+  font-size: 14px;
+  width: 100%;
+  min-height: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  overflow-y: auto;
+  position: relative;
+}
+
+.app {
+  display: flex;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ========== SIDEBAR ========== */
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  overflow-y: auto;
+}
+
+.sidebar-header {
+  padding: 1.25rem 1.25rem 1rem;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.logo-title {
+  display: block;
+  font-weight: 700;
+  font-size: .95rem;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.logo-sub {
+  display: block;
+  font-size: .68rem;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.sidebar-nav {
+  padding: .75rem .75rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: .6rem .85rem;
+  border-radius: 8px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: .85rem;
+  font-weight: 500;
+  transition: all .15s;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,.06);
+  color: #e2e8f0;
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(124,58,237,.35);
+}
+
+.nav-item svg { flex-shrink: 0; opacity: .9; }
+
+.nav-badge {
+  margin-left: auto;
+  font-size: .65rem;
+  font-weight: 600;
+  background: rgba(255,255,255,.12);
+  color: #cbd5e1;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+.nav-badge.new {
+  background: #10b981;
+  color: #fff;
+}
+
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ai-assistant-card {
+  background: linear-gradient(145deg, #1e1b4b, #312e81);
+  border-radius: 14px;
+  padding: 1.1rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.ai-orb {
+  width: 48px; height: 48px;
+  margin: 0 auto .6rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #c4b5fd, #7c3aed 60%, #4c1d95);
+  box-shadow: 0 0 24px rgba(124,58,237,.6);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 24px rgba(124,58,237,.5); }
+  50% { transform: scale(1.06); box-shadow: 0 0 32px rgba(124,58,237,.8); }
+}
+
+.ai-assistant-card p {
+  font-weight: 600;
+  color: #fff;
+  font-size: .9rem;
+  margin-bottom: 2px;
+}
+
+.ai-assistant-card span {
+  display: block;
+  font-size: .72rem;
+  color: #a5b4fc;
+  margin-bottom: .75rem;
+  line-height: 1.35;
+}
+
+.btn-ai-ask {
+  width: 100%;
+  background: linear-gradient(135deg, #7c3aed, #a78bfa);
+  color: #fff;
+  border: none;
+  padding: .55rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: .8rem;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+
+.btn-ai-ask:hover { opacity: .92; }
+
+/* ========== MAIN WRAPPER ========== */
+.main-wrapper {
+  margin-left: var(--sidebar-width);
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: calc(100% - var(--sidebar-width));
+  max-width: calc(100vw - var(--sidebar-width));
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Topbar */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: .7rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  flex-shrink: 0;
+}
+
+.search-bar {
+  flex: 1 1 auto;
+  max-width: 520px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  background: #f1f5f9;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: .55rem 1rem;
+  transition: border-color .15s, background .15s;
+}
+
+.search-bar:focus-within {
+  background: #fff;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+
+.search-bar svg { color: var(--text-muted); flex-shrink: 0; }
+
+.search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: .9rem;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.search-bar kbd {
+  font-size: .7rem;
+  background: #e2e8f0;
+  color: var(--text-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: inherit;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: .45rem .9rem;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+}
+
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  position: relative;
+  color: var(--text-muted);
+  transition: all .15s;
+  flex-shrink: 0;
+}
+
+.icon-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+.mobile-menu-btn {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 99;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+.sidebar-overlay.show {
+  display: block;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.notif-dot {
+  position: absolute;
+  top: -4px; right: -4px;
+  background: #ef4444;
+  color: #fff;
+  font-size: .65rem;
+  font-weight: 700;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .25rem .5rem .25rem .25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.user-menu:hover { background: #f1f5f9; }
+
+.avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-info { display: flex; flex-direction: column; line-height: 1.2; }
+.user-name { font-weight: 600; font-size: .85rem; }
+.user-plan { font-size: .7rem; color: var(--text-muted); }
+
+/* ========== CONTENT ========== */
+.content {
+  padding: 1.25rem 1.5rem 2rem;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+.section { display: none; }
+.section.active { display: block; }
+
+.page-header {
+  margin-bottom: 1.25rem;
+}
+
+.page-header h1 {
+  font-size: 1.45rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.page-header p { color: var(--text-muted); margin-top: .2rem; }
+
+.badge {
+  background: var(--primary);
+  color: #fff;
+  font-size: .7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* KPI Row */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem 1.1rem;
+  display: flex;
+  gap: .85rem;
+  align-items: flex-start;
+  box-shadow: var(--shadow);
+  transition: box-shadow .15s;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.kpi-card:hover { box-shadow: var(--shadow-md); }
+
+.kpi-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.kpi-icon {
+  width: 40px; height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.kpi-icon.purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+.kpi-icon.blue { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+.kpi-icon.green { background: linear-gradient(135deg, #10b981, #34d399); }
+.kpi-icon.orange { background: linear-gradient(135deg, #f97316, #fb923c); }
+.kpi-icon.violet { background: linear-gradient(135deg, #8b5cf6, #c4b5fd); }
+.kpi-icon.teal { background: linear-gradient(135deg, #14b8a6, #2dd4bf); }
+
+.kpi-value {
+  font-size: 1.45rem;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.kpi-label {
+  font-size: .78rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kpi-trend {
+  font-size: .72rem;
+  font-weight: 600;
+  margin-top: 3px;
+}
+
+.kpi-trend.up { color: var(--success); }
+.kpi-sub { font-size: .72rem; color: var(--text-light); margin-top: 2px; }
+
+.kpi-value.updating {
+  animation: kpiFlash 0.6s ease;
+}
+@keyframes kpiFlash {
+  0% { color: var(--primary); transform: scale(1.05); }
+  100% { color: var(--text); transform: scale(1); }
+}
+
+.live-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: -0.5rem 0 1rem;
+  padding: 0 0.15rem;
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5);
+  animation: livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45); }
+  50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+}
+.live-sep { opacity: 0.5; }
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.col-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+.col-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.2rem 1.35rem;
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  margin-bottom: 1rem;
+}
+
+.card-header h2 {
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.card-header h3 {
+  font-size: .95rem;
+  font-weight: 600;
+}
+
+.card-header .muted {
+  font-size: .8rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 2px;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.info-icon {
+  font-size: .8rem;
+  color: var(--text-light);
+  cursor: help;
+}
+
+/* AI Search Box */
+.ai-search-box {
+  display: flex;
+  gap: .75rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.ai-search-box textarea {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .75rem 1rem;
+  font-size: .9rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 64px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.ai-search-box textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(124,58,237,.12);
+}
+
+.ai-search-box.large { flex-direction: column; }
+.ai-search-box.large textarea { min-height: 90px; }
+
+.search-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+.btn-primary {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #fff;
+  border: none;
+  padding: .6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: .85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  white-space: nowrap;
+  transition: opacity .15s, transform .1s;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(124,58,237,.3);
+}
+
+.btn-primary:hover { opacity: .93; }
+.btn-primary:active { transform: scale(.98); }
+.btn-primary.sm { padding: .4rem .85rem; font-size: .8rem; }
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: .4rem .85rem;
+  border-radius: 7px;
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+}
+
+.btn-ghost:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-light);
+}
+
+/* Popular Searches & Source Chips */
+.popular-searches, .source-chips {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  flex-wrap: wrap;
+  margin-bottom: .75rem;
+}
+
+.popular-searches .label, .source-chips .label {
+  font-size: .78rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.chip {
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: .3rem .7rem;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  font-family: inherit;
+}
+
+.chip:hover, .chip.active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.chip.more { color: var(--primary); border-style: dashed; }
+
+.chips-row {
+  display: flex;
+  gap: .5rem;
+  flex-wrap: wrap;
+}
+
+.source-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: .55rem .85rem;
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .15s;
+  min-width: 110px;
+}
+
+.source-chip small {
+  font-size: .68rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  margin-top: 1px;
+}
+
+.source-chip:hover, .source-chip.active {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.source-chip .icon { font-size: 1rem; margin-bottom: 2px; }
+
+/* Sort */
+.sort-select {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .8rem;
+  color: var(--text-muted);
+}
+
+.sort-select select, .sm-select {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: .3rem .5rem;
+  font-size: .8rem;
+  background: #fff;
+  font-family: inherit;
+  outline: none;
+}
+
+/* Job Cards */
+.job-list { display: flex; flex-direction: column; gap: .9rem; }
+
+.job-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fafbfc;
+  transition: box-shadow .15s, border-color .15s;
+}
+
+.job-card:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 4px 14px rgba(124,58,237,.1);
+}
+
+.match-badge {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  flex-shrink: 0;
+  line-height: 1.1;
+}
+
+.match-badge span {
+  font-size: .65rem;
+  font-weight: 500;
+  opacity: .85;
+}
+
+.match-badge.high {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+}
+
+.job-content { flex: 1; min-width: 0; }
+
+.job-title-row h3 {
+  font-size: .95rem;
+  font-weight: 650;
+  margin-bottom: 2px;
+}
+
+.company-row {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .82rem;
+  color: var(--text-muted);
+}
+
+.verified {
+  display: inline-flex;
+  width: 14px; height: 14px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 50%;
+  font-size: .6rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.tags {
+  display: flex;
+  gap: .35rem;
+  flex-wrap: wrap;
+  margin: .45rem 0;
+}
+
+.tag {
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: .7rem;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.tag.more { background: #f1f5f9; color: var(--text-muted); }
+
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem 1rem;
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.job-meta .source {
+  background: #f1f5f9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.job-actions {
+  display: flex;
+  flex-direction: column;
+  gap: .4rem;
+  align-items: flex-end;
+  flex-shrink: 0;
+}
+
+.job-actions .btn-ghost,
+.job-actions .btn-primary {
+  width: 100px;
+  justify-content: center;
+}
+
+.bookmark { font-size: 1rem; }
+
+.card-footer {
+  margin-top: 1rem;
+  padding-top: .75rem;
+  border-top: 1px solid var(--border);
+}
+
+.link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: .85rem;
+}
+
+.link:hover { text-decoration: underline; }
+.link.sm { font-size: .78rem; }
+.link.full { display: block; text-align: center; margin: .75rem 0; }
+
+/* Bottom Analytics Row */
+.bottom-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.stat { text-align: center; }
+.stat-val { font-size: 1.35rem; font-weight: 700; }
+.stat-label { font-size: .72rem; color: var(--text-muted); }
+
+.rate-row { display: flex; gap: 1.5rem; }
+.rate { flex: 1; }
+.rate span { font-size: .75rem; color: var(--text-muted); }
+.rate strong { display: block; font-size: .95rem; margin: 2px 0 4px; }
+
+.progress {
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress div {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 999px;
+}
+
+.progress.green div { background: linear-gradient(90deg, #10b981, #34d399); }
+
+/* Source Bars */
+.source-bars { display: flex; flex-direction: column; gap: .65rem; }
+
+.source-bar {
+  display: grid;
+  grid-template-columns: 130px 1fr 28px;
+  align-items: center;
+  gap: .6rem;
+  font-size: .8rem;
+}
+
+.src-name {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.bar-track {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.bar-track .bar {
+  height: 100%;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  border-radius: 999px;
+}
+
+.src-count { font-weight: 600; text-align: right; color: var(--text-muted); }
+
+/* Insights */
+.insight {
+  display: flex;
+  gap: .6rem;
+  padding: .7rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: .82rem;
+  line-height: 1.4;
+}
+
+.insight:last-child { border-bottom: none; }
+.insight-icon { font-size: 1.1rem; flex-shrink: 0; }
+
+/* Match Card (Right) */
+.match-score-wrap {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: .5rem;
+}
+
+.score-ring {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  flex-shrink: 0;
+}
+
+.score-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 10;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: url(#ringGradient);
+  stroke: #7c3aed;
+  stroke-width: 10;
+  stroke-linecap: round;
+  stroke-dasharray: 327;
+  transition: stroke-dashoffset .6s ease;
+}
+
+.score-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.score-label {
+  font-size: .7rem;
+  color: var(--success);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.score-bars { flex: 1; display: flex; flex-direction: column; gap: .45rem; }
+
+.bar-item {
+  display: grid;
+  grid-template-columns: 110px 1fr 32px;
+  align-items: center;
+  gap: .5rem;
+  font-size: .75rem;
+}
+
+.bar-item .bar-track { height: 6px; }
+.bar-item .bar.green { background: #10b981; }
+.bar-item .bar.blue { background: #3b82f6; }
+.bar-item .bar.purple { background: #8b5cf6; }
+.bar-item .bar.orange { background: #f97316; }
+.bar-item .bar.teal { background: #14b8a6; }
+
+.pct { font-weight: 600; text-align: right; color: var(--text-muted); }
+
+.missing-skills {
+  margin: 1rem 0;
+  padding-top: .85rem;
+  border-top: 1px solid var(--border);
+}
+
+.missing-skills h4 {
+  font-size: .85rem;
+  font-weight: 600;
+  margin-bottom: .5rem;
+}
+
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .4rem;
+}
+
+.skill-tag {
+  background: #fef3c7;
+  color: #92400e;
+  font-size: .72rem;
+  font-weight: 500;
+  padding: 3px 9px;
+  border-radius: 999px;
+}
+
+.optimize-box {
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border-radius: 10px;
+  padding: .9rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+
+.optimize-box p {
+  font-size: .85rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.optimize-box small {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: .75rem;
+}
+
+/* Pipeline */
+.pipeline-stages {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.1rem;
+  padding: .6rem 0;
+  overflow-x: auto;
+}
+
+.stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+}
+
+.stage-count {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stage-label {
+  font-size: .68rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.stage-arrow {
+  color: var(--text-light);
+  font-size: .9rem;
+  padding: 0 .15rem;
+}
+
+.pipeline-stages.large .stage-count { font-size: 1.4rem; }
+
+.recent-apps { display: flex; flex-direction: column; gap: .55rem; }
+
+.app-item {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .55rem .4rem;
+  border-radius: 8px;
+  transition: background .15s;
+}
+
+.app-item:hover { background: #f8fafc; }
+
+.app-logo {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: .9rem;
+  flex-shrink: 0;
+}
+
+.app-info { flex: 1; min-width: 0; }
+.app-title { font-weight: 600; font-size: .82rem; }
+.app-role { font-size: .72rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.status {
+  font-size: .68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status.interview { background: #dbeafe; color: #1e40af; }
+.status.screening { background: #fef3c7; color: #92400e; }
+.status.applied { background: #ede9fe; color: #5b21b6; }
+.status.offer { background: #d1fae5; color: #065f46; }
+
+.time { font-size: .7rem; color: var(--text-light); white-space: nowrap; }
+
+/* Boolean box */
+.boolean-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.boolean-box label {
+  font-size: .8rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: .4rem;
+}
+
+.boolean-box textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .6rem;
+  font-family: ui-monospace, monospace;
+  font-size: .8rem;
+  resize: vertical;
+}
+
+.btn-row { display: flex; gap: .5rem; margin-top: .6rem; }
+
+/* Tables */
+.filters-row {
+  display: flex;
+  gap: .75rem;
+  margin-bottom: 1rem;
+}
+
+.filters-row input, .filters-row select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .5rem .75rem;
+  font-size: .85rem;
+  font-family: inherit;
+  outline: none;
+}
+
+.filters-row input { flex: 1; }
+
+.table-wrap { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .85rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: .6rem .75rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.data-table td {
+  padding: .7rem .75rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table tr:hover td { background: #f8fafc; }
+
+/* Profile */
+.profile-header {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.profile-avatar {
+  width: 80px; height: 80px;
+  border-radius: 50%;
+}
+
+.profile-about h3 {
+  font-size: .9rem;
+  margin: 1rem 0 .35rem;
+  color: var(--text-muted);
+}
+
+.profile-about p { margin-bottom: .5rem; line-height: 1.55; }
+
+/* Tools */
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.tool-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.tool-card h3 { font-size: .95rem; margin-bottom: .35rem; }
+.tool-card p { font-size: .8rem; color: var(--text-muted); margin-bottom: .85rem; }
+
+/* Toggles */
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .5rem 0;
+  font-size: .9rem;
+  cursor: pointer;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #0f172a;
+  color: #fff;
+  padding: .75rem 1.25rem;
+  border-radius: 10px;
+  font-size: .85rem;
+  font-weight: 500;
+  box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  transform: translateY(80px);
+  opacity: 0;
+  transition: all .3s ease;
+  z-index: 999;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+/* ========== RESPONSIVE – keep everything inside the window ========== */
+@media (max-width: 1400px) {
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
+  }
+}
+
+@media (max-width: 1200px) {
+  .kpi-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .dashboard-grid { grid-template-columns: minmax(0, 1fr); }
+  .bottom-row { grid-template-columns: minmax(0, 1fr); }
+  .col-side { max-width: 100%; }
+}
+
+@media (max-width: 1024px) {
+  :root { --sidebar-width: 240px; }
+  .main-wrapper {
+    width: calc(100% - var(--sidebar-width));
+    max-width: calc(100vw - var(--sidebar-width));
+  }
+  .content { padding: 1rem 1.1rem 1.5rem; }
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-btn { display: grid; }
+  .sidebar {
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.25);
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .main-wrapper {
+    margin-left: 0;
+    width: 100%;
+    max-width: 100vw;
+  }
+  .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .job-card { flex-direction: column; }
+  .job-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .job-actions .btn-ghost,
+  .job-actions .btn-primary {
+    width: auto;
+    min-width: 90px;
+  }
+  .topbar {
+    padding: 0.6rem 1rem;
+    gap: 0.5rem;
+  }
+  .search-bar { max-width: none; }
+  .user-info { display: none; }
+  .match-score-wrap { flex-direction: column; align-items: center; }
+  .score-bars { width: 100%; }
+  .bar-item { grid-template-columns: 90px 1fr 36px; }
+}
+
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+  .topbar { flex-wrap: wrap; }
+  .search-bar {
+    max-width: 100%;
+    order: 3;
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .topbar-right { margin-left: auto; }
+  .content { padding: 0.85rem 0.75rem 1.25rem; }
+  .card { padding: 1rem; }
+  .ai-search-box { flex-direction: column; }
+  .ai-search-box .btn-primary { width: 100%; justify-content: center; }
+  .popular-searches, .source-chips, .chips-row {
+    gap: 0.4rem;
+  }
+  .source-chip { min-width: 0; flex: 1 1 calc(50% - 0.4rem); }
+  .pipeline-stages { gap: 0.25rem; }
+  .stage { min-width: 40px; }
+  .app-item { flex-wrap: wrap; gap: 0.4rem; }
+  .app-item .time { width: 100%; text-align: right; }
+  .toast {
+    left: 12px;
+    right: 12px;
+    bottom: 16px;
+    width: auto;
+  }
+}
+
+/* Prevent any element from causing horizontal overflow */
+img, svg, video, canvas, iframe {
+  max-width: 100%;
+  height: auto;
+}
+
+.card, .kpi-card, .job-card, .source-chip, .ai-search-box textarea {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.table-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ========== LOGIN ========== */
+.login-overlay {
+  position: fixed; inset: 0; z-index: 10000;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #312e81 100%);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.login-overlay.hidden { display: none; }
+.login-card {
+  background: #fff; border-radius: 16px; padding: 2rem 2.25rem;
+  width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,.35);
+}
+.login-card .logo-row { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.5rem; }
+.login-card h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: .25rem; }
+.login-card .sub { font-size: .85rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+.login-field { margin-bottom: 1rem; }
+.login-field label { display: block; font-size: .8rem; font-weight: 600; margin-bottom: .35rem; color: var(--text-muted); }
+.login-field input {
+  width: 100%; border: 1px solid var(--border); border-radius: 8px;
+  padding: .65rem .85rem; font-size: .9rem; font-family: inherit; outline: none;
+}
+.login-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(124,58,237,.12); }
+.login-error { color: var(--danger); font-size: .8rem; margin-bottom: .75rem; display: none; }
+.login-card .btn-primary { width: 100%; justify-content: center; padding: .7rem; margin-top: .25rem; }
+
+/* ========== NOTIFICATION PANEL ========== */
+.notif-panel {
+  position: fixed; top: 56px; right: 16px;
+  width: 340px; max-height: 400px; overflow-y: auto;
+  background: #fff; border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: var(--shadow-md); z-index: 200; display: none;
+}
+.notif-panel.open { display: block; }
+.notif-panel h4 { padding: .85rem 1rem; border-bottom: 1px solid var(--border); font-size: .9rem; }
+.notif-item {
+  padding: .75rem 1rem; border-bottom: 1px solid var(--border);
+  font-size: .82rem; cursor: pointer; transition: background .15s;
+}
+.notif-item:hover { background: #f8fafc; }
+.notif-item.unread { background: #f5f3ff; }
+.notif-item .n-time { font-size: .7rem; color: var(--text-light); margin-top: 2px; }
+
+/* ========== AI CHAT PANEL ========== */
+.chat-panel {
+  position: fixed; top: 0; right: 0; bottom: 0; width: 380px; max-width: 100vw;
+  background: #fff; border-left: 1px solid var(--border);
+  box-shadow: -8px 0 32px rgba(0,0,0,.12); z-index: 500;
+  display: flex; flex-direction: column; transform: translateX(100%);
+  transition: transform .28s ease;
+}
+.chat-panel.open { transform: translateX(0); }
+.chat-header {
+  padding: 1rem 1.15rem; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff;
+}
+.chat-header h3 { font-size: 1rem; font-weight: 600; }
+.chat-close {
+  background: rgba(255,255,255,.2); border: none; color: #fff;
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 1.1rem;
+}
+.chat-messages { flex: 1; overflow-y: auto; padding: 1rem; display: flex; flex-direction: column; gap: .75rem; }
+.chat-msg { max-width: 85%; padding: .65rem .9rem; border-radius: 12px; font-size: .85rem; line-height: 1.45; }
+.chat-msg.bot { background: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-msg.user { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-input-row {
+  padding: .85rem; border-top: 1px solid var(--border); display: flex; gap: .5rem;
+}
+.chat-input-row input {
+  flex: 1; border: 1px solid var(--border); border-radius: 8px;
+  padding: .55rem .75rem; font-size: .85rem; font-family: inherit; outline: none;
+}
+.chat-input-row input:focus { border-color: var(--primary); }
+.chat-input-row button {
+  background: var(--primary); color: #fff; border: none; border-radius: 8px;
+  padding: .55rem .9rem; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+
+/* ========== JD / MATCH MODAL ========== */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 800;
+  display: none; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: #fff; border-radius: 14px; width: 100%; max-width: 560px;
+  max-height: 85vh; overflow-y: auto; padding: 1.5rem; box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
+.modal-box h2 { font-size: 1.15rem; margin-bottom: .5rem; }
+.modal-close {
+  float: right; background: none; border: none; font-size: 1.25rem;
+  cursor: pointer; color: var(--text-muted); line-height: 1;
+}
+.modal-actions { display: flex; gap: .5rem; margin-top: 1.25rem; flex-wrap: wrap; }
+
+/* Optimize suggestions */
+.opt-list { margin: 1rem 0; padding-left: 1.1rem; }
+.opt-list li { margin-bottom: .45rem; font-size: .88rem; line-height: 1.4; }
+
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <!-- ========== SIDEBAR ========== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <div class="logo-text">
+            <span class="logo-title">TA Job Search Hub</span>
+            <span class="logo-sub">AI Job Search & Intelligence</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-section="dashboard">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-item" data-section="ai-search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span>AI Job Search</span>
+        </a>
+        <a href="#" class="nav-item" data-section="sources">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+          <span>Sources</span>
+          <span class="nav-badge">12K+</span>
+        </a>
+        <a href="#" class="nav-item" data-section="curated">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span>Curated Jobs</span>
+        </a>
+        <a href="#" class="nav-item" data-section="cv-match">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>CV Match</span>
+          <span class="nav-badge new">NEW</span>
+        </a>
+        <a href="#" class="nav-item" data-section="applications">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span>Applications</span>
+        </a>
+        <a href="#" class="nav-item" data-section="interviews">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Interviews</span>
+        </a>
+        <a href="#" class="nav-item" data-section="offers">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+          <span>Offers</span>
+        </a>
+        <a href="#" class="nav-item" data-section="analytics">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <span>Analytics</span>
+        </a>
+        <a href="#" class="nav-item" data-section="alerts">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span>Alerts</span>
+        </a>
+        <a href="#" class="nav-item" data-section="mycv">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>My CV</span>
+        </a>
+        <a href="#" class="nav-item" data-section="tools">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          <span>Tools</span>
+        </a>
+        <a href="#" class="nav-item" data-section="settings">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="ai-assistant-card">
+          <div class="ai-orb"></div>
+          <p>AI Assistant</p>
+          <span>Ask me anything about your job search…</span>
+          <button class="btn-ai-ask" id="btnAskAI">Ask AI Assistant →</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ========== MAIN ========== -->
+    <div class="main-wrapper">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <button class="icon-btn mobile-menu-btn" id="btnMobileMenu" title="Menu" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="search-bar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" id="globalSearch" placeholder="Search jobs, companies, skills or ask AI…" />
+          <kbd>⌘ K</kbd>
+        </div>
+        <div class="topbar-right">
+          <button class="btn-outline" id="btnAIAssistant">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M16 14v1a4 4 0 0 1-8 0v-1"/><path d="M8 14h8"/></svg>
+            AI Assistant
+          </button>
+          <button class="icon-btn" id="btnNotifications" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="notif-dot">6</span>
+          </button>
+          <button class="icon-btn" title="Help">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </button>
+          <div class="user-menu" id="userMenu">
+            <img src="https://ui-avatars.com/api/?name=Job+Seeker&background=7c3aed&color=fff&size=80" alt="Job Seeker" class="avatar" />
+            <div class="user-info">
+              <span class="user-name">Job Seeker</span>
+              <span class="user-plan">Free Plan</span>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content" id="mainContent">
+        <!-- ===== DASHBOARD SECTION ===== -->
+        <section id="section-dashboard" class="section active">
+          <!-- KPI Row – Realtime -->
+          <div class="kpi-row" id="kpiRow">
+            <div class="kpi-card">
+              <div class="kpi-icon purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiJobs">2,846</div>
+                <div class="kpi-label">Jobs Found</div>
+                <div class="kpi-trend up" id="kpiJobsTrend">↑ 214 today</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiCurated">327</div>
+                <div class="kpi-label">AI Curated</div>
+                <div class="kpi-trend up" id="kpiCuratedTrend">↑ 38 today</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiHighMatch">86</div>
+                <div class="kpi-label">High Match Jobs</div>
+                <div class="kpi-sub" id="kpiHighMatchSub">>80% ATS</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiApps">24</div>
+                <div class="kpi-label">Applications</div>
+                <div class="kpi-sub">This Month</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon violet"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiInterviews">12</div>
+                <div class="kpi-label">Interviews</div>
+                <div class="kpi-sub">In Progress</div>
+              </div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-icon teal"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2z"/></svg></div>
+              <div class="kpi-body">
+                <div class="kpi-value" id="kpiOffers">3</div>
+                <div class="kpi-label">Offers</div>
+                <div class="kpi-sub">In Hand</div>
+              </div>
+            </div>
+          </div>
+          <div class="live-bar" id="liveBar">
+            <span class="live-dot"></span>
+            <span>Live data</span>
+            <span class="live-sep">·</span>
+            <span id="lastUpdated">Updated just now</span>
+          </div>
+
+          <!-- Main Grid -->
+          <div class="dashboard-grid">
+            <!-- Left Column -->
+            <div class="col-main">
+              <!-- AI Job Search Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h2>AI Job Search</h2>
+                  <span class="muted">Search across 50,000+ job sources globally</span>
+                </div>
+                <div class="ai-search-box">
+                  <textarea id="aiQuery" rows="2" placeholder="Find global VP/Director Talent Acquisition roles in Europe, Middle East and Singapore, remote/hybrid, $150K+, posted last 7d">Find global VP/Director Talent Acquisition roles in Europe, Middle East and Singapore, remote/hybrid, $150K+, posted last 7d</textarea>
+                  <button class="btn-primary" id="btnSearchAI">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 0 1 4 4v1a4 4 0 0 1-8 0V6a4 4 0 0 1 4-4z"/><path d="M16 14v1a4 4 0 0 1-8 0v-1"/></svg>
+                    Search with AI
+                  </button>
+                </div>
+                <div class="popular-searches">
+                  <span class="label">Popular Searches:</span>
+                  <button class="chip">VP TA Global</button>
+                  <button class="chip">Director Talent Acquisition</button>
+                  <button class="chip">Head of TA</button>
+                  <button class="chip">TA Leadership</button>
+                  <button class="chip more">More</button>
+                </div>
+                <div class="source-chips">
+                  <span class="label">Search across:</span>
+                  <div class="chips-row">
+                    <div class="source-chip active"><span class="icon">📋</span> Job Boards <small>184 Sources</small></div>
+                    <div class="source-chip"><span class="icon">🏢</span> Company Sites <small>12,480 Sites</small></div>
+                    <div class="source-chip"><span class="icon">🤝</span> Agencies <small>2,340 Firms</small></div>
+                    <div class="source-chip"><span class="icon">🔍</span> Executive Search <small>420 Firms</small></div>
+                    <div class="source-chip"><span class="icon">📱</span> Job Apps <small>126 Apps</small></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- AI Curated Opportunities -->
+              <div class="card">
+                <div class="card-header flex-between">
+                  <div>
+                    <h2>AI Curated Opportunities <span class="info-icon" title="AI ranked by match score, recency & seniority">ⓘ</span></h2>
+                    <span class="muted" id="curatedCountText">Showing 327 jobs curated by AI</span>
+                  </div>
+                  <div class="sort-select">
+                    <label>Sort by:</label>
+                    <select id="sortCurated">
+                      <option>AI Match</option>
+                      <option>Newest</option>
+                      <option>Salary</option>
+                      <option>Company</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="job-list" id="curatedJobsList">
+                  <!-- Job 1 -->
+                  <div class="job-card">
+                    <div class="match-badge high">94%<span>Match</span></div>
+                    <div class="job-content">
+                      <div class="job-title-row">
+                        <h3>VP Talent Acquisition</h3>
+                        <div class="company-row">
+                          <span class="company">Global Technology Solutions</span>
+                          <span class="verified" title="Verified company">✓</span>
+                        </div>
+                      </div>
+                      <div class="tags">
+                        <span class="tag">AI Transformation</span>
+                        <span class="tag">Global TA</span>
+                        <span class="tag">Executive Search</span>
+                        <span class="tag more">+2</span>
+                      </div>
+                      <div class="job-meta">
+                        <span>📍 London, UK · Hybrid</span>
+                        <span>💰 $180K – $220K</span>
+                        <span>⏱ 15+ Yrs</span>
+                        <span>🕒 Posted 2 hours ago</span>
+                        <span class="source">Company Site</span>
+                      </div>
+                    </div>
+                    <div class="job-actions">
+                      <button class="btn-ghost">View JD</button>
+                      <button class="btn-ghost">CV Match</button>
+                      <button class="btn-primary sm">Apply</button>
+                      <button class="icon-btn bookmark" title="Save">🔖</button>
+                    </div>
+                  </div>
+
+                  <!-- Job 2 -->
+                  <div class="job-card">
+                    <div class="match-badge high">89%<span>Match</span></div>
+                    <div class="job-content">
+                      <div class="job-title-row">
+                        <h3>Global Head of Talent Acquisition</h3>
+                        <div class="company-row">
+                          <span class="company">FinTech Innovations</span>
+                          <span class="verified">✓</span>
+                        </div>
+                      </div>
+                      <div class="tags">
+                        <span class="tag">Global TA</span>
+                        <span class="tag">Talent Strategy</span>
+                        <span class="tag">Leadership</span>
+                        <span class="tag more">+2</span>
+                      </div>
+                      <div class="job-meta">
+                        <span>📍 Singapore · Remote</span>
+                        <span>💰 $160K – $210K</span>
+                        <span>⏱ 15+ Yrs</span>
+                        <span>🕒 Posted 3 hours ago</span>
+                        <span class="source">LinkedIn</span>
+                      </div>
+                    </div>
+                    <div class="job-actions">
+                      <button class="btn-ghost">View JD</button>
+                      <button class="btn-ghost">CV Match</button>
+                      <button class="btn-primary sm">Apply</button>
+                      <button class="icon-btn bookmark">🔖</button>
+                    </div>
+                  </div>
+
+                  <!-- Job 3 -->
+                  <div class="job-card">
+                    <div class="match-badge high">86%<span>Match</span></div>
+                    <div class="job-content">
+                      <div class="job-title-row">
+                        <h3>Director of Talent Acquisition</h3>
+                        <div class="company-row">
+                          <span class="company">NextGen Digital</span>
+                          <span class="verified">✓</span>
+                        </div>
+                      </div>
+                      <div class="tags">
+                        <span class="tag">Scaling Teams</span>
+                        <span class="tag">TA Operations</span>
+                        <span class="tag">HR Tech</span>
+                        <span class="tag more">+1</span>
+                      </div>
+                      <div class="job-meta">
+                        <span>📍 Dubai, UAE · Hybrid</span>
+                        <span>💰 $150K – $190K</span>
+                        <span>⏱ 12+ Yrs</span>
+                        <span>🕒 Posted 5 hours ago</span>
+                        <span class="source">Indeed</span>
+                      </div>
+                    </div>
+                    <div class="job-actions">
+                      <button class="btn-ghost">View JD</button>
+                      <button class="btn-ghost">CV Match</button>
+                      <button class="btn-primary sm">Apply</button>
+                      <button class="icon-btn bookmark">🔖</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-footer">
+                  <a href="#" class="link" data-section="curated">View all curated jobs →</a>
+                </div>
+              </div>
+
+              <!-- Application Analytics + Sources + Insights -->
+              <div class="bottom-row">
+                <div class="card analytics-card">
+                  <div class="card-header flex-between">
+                    <h3>Application Analytics</h3>
+                    <select class="sm-select">
+                      <option>This Month</option>
+                      <option>Last 30 days</option>
+                      <option>This Quarter</option>
+                    </select>
+                  </div>
+                  <div class="stats-grid">
+                    <div class="stat"><div class="stat-val">24</div><div class="stat-label">Applications</div></div>
+                    <div class="stat"><div class="stat-val">8</div><div class="stat-label">Responses</div></div>
+                    <div class="stat"><div class="stat-val">5</div><div class="stat-label">Interviews</div></div>
+                    <div class="stat"><div class="stat-val">3</div><div class="stat-label">Offers</div></div>
+                  </div>
+                  <div class="rate-row">
+                    <div class="rate">
+                      <span>Response Rate</span>
+                      <strong>33%</strong>
+                      <div class="progress"><div style="width:33%"></div></div>
+                    </div>
+                    <div class="rate">
+                      <span>Interview Rate</span>
+                      <strong>63%</strong>
+                      <div class="progress green"><div style="width:63%"></div></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card sources-card">
+                  <div class="card-header flex-between">
+                    <h3>Top Performing Sources</h3>
+                    <select class="sm-select"><option>This Month</option></select>
+                  </div>
+                  <div class="source-bars">
+                    <div class="source-bar">
+                      <span class="src-name"><img src="https://cdn.simpleicons.org/linkedin/0A66C2" width="14" height="14" alt=""> LinkedIn</span>
+                      <div class="bar-track"><div class="bar" style="width:90%"></div></div>
+                      <span class="src-count">32</span>
+                    </div>
+                    <div class="source-bar">
+                      <span class="src-name">🏢 Company Sites</span>
+                      <div class="bar-track"><div class="bar" style="width:78%"></div></div>
+                      <span class="src-count">28</span>
+                    </div>
+                    <div class="source-bar">
+                      <span class="src-name"><img src="https://cdn.simpleicons.org/indeed/003A9B" width="14" height="14" alt=""> Indeed</span>
+                      <div class="bar-track"><div class="bar" style="width:50%"></div></div>
+                      <span class="src-count">18</span>
+                    </div>
+                    <div class="source-bar">
+                      <span class="src-name">🤝 Recruitment Agencies</span>
+                      <div class="bar-track"><div class="bar" style="width:33%"></div></div>
+                      <span class="src-count">12</span>
+                    </div>
+                    <div class="source-bar">
+                      <span class="src-name"><img src="https://cdn.simpleicons.org/glassdoor/0CAA41" width="14" height="14" alt=""> Glassdoor</span>
+                      <div class="bar-track"><div class="bar" style="width:22%"></div></div>
+                      <span class="src-count">8</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="card insights-card">
+                  <div class="card-header flex-between">
+                    <h3>AI Insights</h3>
+                    <a href="#" class="link sm">View All</a>
+                  </div>
+                  <div class="insight">
+                    <div class="insight-icon">💡</div>
+                    <p>You have a higher response rate for <strong>Director level roles in Technology companies</strong>.</p>
+                  </div>
+                  <div class="insight">
+                    <div class="insight-icon">📈</div>
+                    <p>Applications with <strong>80%+ match score</strong> get <strong>3.6× more responses</strong>.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-side">
+              <!-- Job Match & CV Analysis -->
+              <div class="card match-card">
+                <div class="card-header">
+                  <h2>Job Match & CV Analysis</h2>
+                </div>
+                <div class="match-score-wrap">
+                  <div class="score-ring">
+                    <svg viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="52" class="ring-bg"/>
+                      <circle cx="60" cy="60" r="52" class="ring-fill" style="stroke-dashoffset: calc(327 - (327 * 87 / 100))"/>
+                    </svg>
+                    <div class="score-text">
+                      <span class="score-num">87%</span>
+                      <span class="score-label">Great Match</span>
+                    </div>
+                  </div>
+                  <div class="score-bars">
+                    <div class="bar-item">
+                      <span>Skills Match</span>
+                      <div class="bar-track"><div class="bar green" style="width:82%"></div></div>
+                      <span class="pct">82%</span>
+                    </div>
+                    <div class="bar-item">
+                      <span>Experience Match</span>
+                      <div class="bar-track"><div class="bar blue" style="width:94%"></div></div>
+                      <span class="pct">94%</span>
+                    </div>
+                    <div class="bar-item">
+                      <span>Leadership Match</span>
+                      <div class="bar-track"><div class="bar purple" style="width:96%"></div></div>
+                      <span class="pct">96%</span>
+                    </div>
+                    <div class="bar-item">
+                      <span>Industry Match</span>
+                      <div class="bar-track"><div class="bar orange" style="width:78%"></div></div>
+                      <span class="pct">78%</span>
+                    </div>
+                    <div class="bar-item">
+                      <span>Keywords Match</span>
+                      <div class="bar-track"><div class="bar teal" style="width:81%"></div></div>
+                      <span class="pct">81%</span>
+                    </div>
+                  </div>
+                </div>
+                <a href="#" class="link full" data-section="cv-match">View Full Analysis →</a>
+
+                <div class="missing-skills">
+                  <div class="flex-between">
+                    <h4>Top Missing Skills</h4>
+                    <a href="#" class="link sm">How to Add</a>
+                  </div>
+                  <div class="skill-tags">
+                    <span class="skill-tag">HR Analytics</span>
+                    <span class="skill-tag">People Analytics</span>
+                    <span class="skill-tag">Talent Intelligence</span>
+                    <span class="skill-tag">AI Recruitment</span>
+                  </div>
+                </div>
+
+                <div class="optimize-box">
+                  <p>Improve your match score<br><small>Get AI suggestions to improve your CV for this role</small></p>
+                  <button class="btn-primary sm" id="btnOptimizeCV">Optimize CV</button>
+                </div>
+              </div>
+
+              <!-- Application Pipeline -->
+              <div class="card pipeline-card">
+                <div class="card-header flex-between">
+                  <h2>Application Pipeline</h2>
+                  <a href="#" class="link sm" data-section="applications">View All</a>
+                </div>
+                <div class="pipeline-stages">
+                  <div class="stage">
+                    <span class="stage-count">42</span>
+                    <span class="stage-label">Saved</span>
+                  </div>
+                  <div class="stage-arrow">→</div>
+                  <div class="stage">
+                    <span class="stage-count">24</span>
+                    <span class="stage-label">Applied</span>
+                  </div>
+                  <div class="stage-arrow">→</div>
+                  <div class="stage">
+                    <span class="stage-count">8</span>
+                    <span class="stage-label">Screening</span>
+                  </div>
+                  <div class="stage-arrow">→</div>
+                  <div class="stage">
+                    <span class="stage-count">5</span>
+                    <span class="stage-label">Interview</span>
+                  </div>
+                  <div class="stage-arrow">→</div>
+                  <div class="stage">
+                    <span class="stage-count">3</span>
+                    <span class="stage-label">Offer</span>
+                  </div>
+                </div>
+
+                <div class="recent-apps" id="recentApps">
+                  <div class="app-item">
+                    <div class="app-logo" style="background:#00a4ef">M</div>
+                    <div class="app-info">
+                      <div class="app-title">Microsoft</div>
+                      <div class="app-role">Director – Talent Acquisition</div>
+                    </div>
+                    <span class="status interview">Interview 2</span>
+                    <span class="time">Updated 1d ago</span>
+                    <button class="icon-btn">⋯</button>
+                  </div>
+                  <div class="app-item">
+                    <div class="app-logo" style="background:#ff9900">a</div>
+                    <div class="app-info">
+                      <div class="app-title">Amazon</div>
+                      <div class="app-role">Head of Talent Acquisition</div>
+                    </div>
+                    <span class="status interview">Interview 1</span>
+                    <span class="time">Updated 2d ago</span>
+                    <button class="icon-btn">⋯</button>
+                  </div>
+                  <div class="app-item">
+                    <div class="app-logo" style="background:#4285f4">G</div>
+                    <div class="app-info">
+                      <div class="app-title">Google</div>
+                      <div class="app-role">VP Talent Acquisition</div>
+                    </div>
+                    <span class="status screening">Screening</span>
+                    <span class="time">Updated 3d ago</span>
+                    <button class="icon-btn">⋯</button>
+                  </div>
+                  <div class="app-item">
+                    <div class="app-logo" style="background:#00a1e0">S</div>
+                    <div class="app-info">
+                      <div class="app-title">Salesforce</div>
+                      <div class="app-role">Director TA</div>
+                    </div>
+                    <span class="status applied">Applied</span>
+                    <span class="time">Updated 5d ago</span>
+                    <button class="icon-btn">⋯</button>
+                  </div>
+                  <div class="app-item">
+                    <div class="app-logo" style="background:#96bf48">S</div>
+                    <div class="app-info">
+                      <div class="app-title">Shopify</div>
+                      <div class="app-role">Global TA Lead</div>
+                    </div>
+                    <span class="status applied">Applied</span>
+                    <span class="time">Updated 6d ago</span>
+                    <button class="icon-btn">⋯</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===== OTHER SECTIONS (placeholders with content) ===== -->
+        <section id="section-ai-search" class="section">
+          <div class="page-header">
+            <h1>AI Job Search</h1>
+            <p>Natural language search across 50,000+ global sources with Boolean + X-ray generation</p>
+          </div>
+          <div class="card">
+            <div class="ai-search-box large">
+              <textarea id="aiQueryFull" rows="3" placeholder="Describe the roles you want… e.g. Global VP/Director TA roles in Europe, ME, Singapore, remote/hybrid, $150K+, last 7 days">Find global VP/Director Talent Acquisition roles in Europe, Middle East and Singapore, remote/hybrid, $150K+, posted last 7d</textarea>
+              <div class="search-actions">
+                <button class="btn-primary" id="btnSearchAIFull">✨ Search with AI</button>
+                <button class="btn-outline" id="btnGenerateBoolean">Generate Boolean / X-ray</button>
+                <button class="btn-outline" id="btnOpenGoogle">Open in Google</button>
+              </div>
+            </div>
+            <div id="booleanOutput" class="boolean-box" style="display:none;">
+              <label>Generated Boolean / Google X-ray</label>
+              <textarea id="booleanText" rows="4" readonly></textarea>
+              <div class="btn-row">
+                <button class="btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById('booleanText').value)">Copy</button>
+                <button class="btn-primary sm" id="btnRunXray">Open X-ray Search</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-sources" class="section">
+          <div class="page-header">
+            <h1>Sources <span class="badge">12K+</span></h1>
+            <p>Global job boards, ATS, company career pages, executive search firms & aggregators</p>
+          </div>
+          <div class="card">
+            <div class="filters-row">
+              <input type="text" placeholder="Filter by name or country…" id="sourceFilter" />
+              <select id="regionFilter">
+                <option value="">All Regions</option>
+                <option>Global / Remote</option>
+                <option>India</option>
+                <option>APAC</option>
+                <option>EMEA</option>
+                <option>Americas</option>
+              </select>
+            </div>
+            <div class="table-wrap">
+              <table class="data-table" id="sourcesTable">
+                <thead>
+                  <tr><th>Portal</th><th>Region</th><th>Type</th><th>Actions</th></tr>
+                </thead>
+                <tbody id="sourcesBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-curated" class="section">
+          <div class="page-header">
+            <h1>Curated Jobs</h1>
+            <p>327 AI-ranked TA leadership opportunities</p>
+          </div>
+          <div class="card">
+            <div id="fullCuratedList" class="job-list"></div>
+          </div>
+        </section>
+
+        <section id="section-cv-match" class="section">
+          <div class="page-header">
+            <h1>CV Match & Analysis</h1>
+            <p>AI-powered ATS scoring against target roles</p>
+          </div>
+          <div class="card">
+            <p class="muted">Upload or paste a job description to get a detailed match score against your saved profile.</p>
+            <textarea id="jdInput" rows="6" placeholder="Paste full Job Description here…"></textarea>
+            <button class="btn-primary" id="btnAnalyzeJD" style="margin-top:12px">Analyze Match</button>
+            <div id="matchResult" style="margin-top:20px;display:none;"></div>
+          </div>
+        </section>
+
+        <section id="section-applications" class="section">
+          <div class="page-header">
+            <h1>Applications</h1>
+            <p>Track every application from saved → offer</p>
+          </div>
+          <div class="card">
+            <div class="pipeline-stages large" id="fullPipeline"></div>
+            <div class="table-wrap" style="margin-top:20px">
+              <table class="data-table">
+                <thead>
+                  <tr><th>Company</th><th>Role</th><th>Status</th><th>Applied</th><th>Last Update</th><th></th></tr>
+                </thead>
+                <tbody id="appsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-interviews" class="section">
+          <div class="page-header">
+            <h1>Interviews</h1>
+            <p>Upcoming and past interviews — schedule, stage, and prep notes</p>
+          </div>
+          <div class="card">
+            <div id="interviewsList" class="job-list"></div>
+          </div>
+        </section>
+
+        <section id="section-offers" class="section">
+          <div class="page-header">
+            <h1>Offers</h1>
+            <p>3 offers in hand — compensation, deadline, and decision status</p>
+          </div>
+          <div class="card">
+            <div id="offersList" class="job-list"></div>
+          </div>
+        </section>
+
+        <section id="section-analytics" class="section">
+          <div class="page-header">
+            <h1>Analytics</h1>
+            <p>Application performance, funnel, sources and match insights — graphical view</p>
+          </div>
+          <div class="filters-row" style="margin-bottom:1rem">
+            <select id="analyticsPeriod" class="sm-select">
+              <option value="daily">Today</option>
+              <option value="weekly">This Week</option>
+              <option value="monthly" selected>This Month</option>
+              <option value="quarterly">This Quarter</option>
+              <option value="annually">This Year</option>
+            </select>
+          </div>
+          <div class="kpi-row" id="analyticsKpiRow" style="margin-bottom:1.25rem">
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiApps">24</div><div class="kpi-label">Applications</div></div></div>
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiResp">8</div><div class="kpi-label">Responses</div></div></div>
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiInt">5</div><div class="kpi-label">Interviews</div></div></div>
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiOff">3</div><div class="kpi-label">Offers</div></div></div>
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiRespRate">33%</div><div class="kpi-label">Response Rate</div></div></div>
+            <div class="kpi-card"><div class="kpi-body"><div class="kpi-value" id="aKpiIntRate">63%</div><div class="kpi-label">Interview Rate</div></div></div>
+          </div>
+          <div class="dashboard-grid" style="grid-template-columns: minmax(0,1fr) minmax(0,1fr); margin-bottom:1.25rem">
+            <div class="card">
+              <div class="card-header"><h3>Application funnel</h3><span class="muted">Saved to Offer conversion</span></div>
+              <canvas id="chartFunnel" height="200"></canvas>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Applications over time</h3><span class="muted">Volume trend</span></div>
+              <canvas id="chartTrend" height="200"></canvas>
+            </div>
+          </div>
+          <div class="dashboard-grid" style="grid-template-columns: minmax(0,1fr) minmax(0,1fr); margin-bottom:1.25rem">
+            <div class="card">
+              <div class="card-header"><h3>Top sources by applications</h3><span class="muted">Channel performance</span></div>
+              <canvas id="chartSources" height="220"></canvas>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Status mix</h3><span class="muted">Where applications sit today</span></div>
+              <canvas id="chartStatus" height="220"></canvas>
+            </div>
+          </div>
+          <div class="dashboard-grid" style="grid-template-columns: minmax(0,1fr) minmax(0,1fr); margin-bottom:1.25rem">
+            <div class="card">
+              <div class="card-header"><h3>Match score distribution</h3><span class="muted">Curated jobs vs your profile</span></div>
+              <canvas id="chartMatch" height="200"></canvas>
+            </div>
+            <div class="card">
+              <div class="card-header"><h3>Response vs interview rate</h3><span class="muted">By period</span></div>
+              <canvas id="chartRates" height="200"></canvas>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3>AI insights</h3></div>
+            <div class="insight"><div class="insight-icon">💡</div><p>Applications with <strong>80%+ match score</strong> get <strong>3.6× more responses</strong> than those below 70%.</p></div>
+            <div class="insight"><div class="insight-icon">📈</div><p>Highest response rate is for <strong>Director-level TA roles in Technology / FinTech</strong>.</p></div>
+            <div class="insight"><div class="insight-icon">🎯</div><p><strong>LinkedIn</strong> and <strong>Company Sites</strong> drive the most interview conversions this month.</p></div>
+          </div>
+        </section>
+
+        <section id="section-alerts" class="section">
+          <div class="page-header">
+            <h1>Alerts</h1>
+            <p>Real-time job alerts by title, location, salary and match score</p>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <div class="card-header flex-between">
+              <h3>Create alert</h3>
+            </div>
+            <div class="filters-row" style="flex-wrap:wrap">
+              <input type="text" id="alertTitle" placeholder="Job title (e.g. VP Talent Acquisition)" style="flex:1;min-width:180px" />
+              <input type="text" id="alertLocation" placeholder="Location / country" style="flex:1;min-width:140px" />
+              <input type="text" id="alertSalary" placeholder="Min salary (e.g. 150K)" style="width:140px" />
+              <select id="alertMatch" class="sm-select">
+                <option value="70">Match ≥ 70%</option>
+                <option value="80" selected>Match ≥ 80%</option>
+                <option value="90">Match ≥ 90%</option>
+              </select>
+              <button class="btn-primary" id="btnCreateAlert">Create alert</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>Active alerts</h3>
+              <span class="muted" id="alertLiveLabel">Live · updating</span>
+            </div>
+            <div id="alertsList"></div>
+          </div>
+        </section>
+
+        <section id="section-mycv" class="section">
+          <div class="page-header">
+            <h1>My CV / Profile</h1>
+            <p id="mycvSubtitle">Your Name · Talent Acquisition Professional</p>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <div class="profile-header">
+              <img id="profilePhoto" src="https://ui-avatars.com/api/?name=Job+Seeker&background=7c3aed&color=fff&size=120" class="profile-avatar" alt="" />
+              <div>
+                <h2 id="profileNameDisplay">Your Name</h2>
+                <p class="muted" id="profileTitleDisplay">Talent Acquisition Professional</p>
+                <p id="profileLocationDisplay" class="muted">Your Location · Remote / Hybrid preferred</p>
+                <p><a href="https://www.linkedin.com/in/neeraj-kapil/" target="_blank" class="link">linkedin.com/in/neeraj-kapil</a></p>
+              </div>
+            </div>
+            <div class="profile-about" id="profileAboutBlock">
+              <h3>About</h3>
+              <p id="profileAboutText">Experienced Talent Acquisition professional focused on building scalable hiring systems, leadership pipelines, and high-performing teams.</p>
+              <h3>Current</h3>
+              <p><strong>Your Company</strong> · Talent Acquisition Leader · Present</p>
+              <p>Hired to build a global, scalable TA engine across 35+ countries; architect AI-enabled hiring systems; lead DEI, succession, and employer brand for hyper-growth.</p>
+            </div>
+            <div class="btn-row" style="margin-top:16px;flex-wrap:wrap">
+              <label class="btn-outline" style="cursor:pointer;margin:0">
+                Upload photo
+                <input type="file" id="photoUpload" accept="image/*" style="display:none" />
+              </label>
+              <label class="btn-outline" style="cursor:pointer;margin:0">
+                Upload resume
+                <input type="file" id="resumeUpload" accept=".pdf,.doc,.docx" style="display:none" />
+              </label>
+              <button class="btn-outline" id="btnEditProfile">Edit profile</button>
+            </div>
+            <p id="resumeFileLabel" class="muted" style="margin-top:.5rem;font-size:.8rem"></p>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Regional CV templates</h3>
+              <span class="muted">Format optimized by market — download or preview</span>
+            </div>
+            <div class="tools-grid" id="regionTemplates">
+              <div class="tool-card" data-region="india"><h3>🇮🇳 India</h3><p>Photo optional · detailed education · notice period</p><button class="btn-outline sm btn-region-cv" data-region="india">Preview / Download</button></div>
+              <div class="tool-card" data-region="europe"><h3>🇪🇺 Europe</h3><p>GDPR-friendly · no photo · skills-first</p><button class="btn-outline sm btn-region-cv" data-region="europe">Preview / Download</button></div>
+              <div class="tool-card" data-region="uk"><h3>🇬🇧 UK</h3><p>2 pages max · achievements quantified</p><button class="btn-outline sm btn-region-cv" data-region="uk">Preview / Download</button></div>
+              <div class="tool-card" data-region="northamerica"><h3>🇺🇸 North America</h3><p>US/Canada · no photo · impact metrics</p><button class="btn-outline sm btn-region-cv" data-region="northamerica">Preview / Download</button></div>
+              <div class="tool-card" data-region="latam"><h3>🌎 LATAM</h3><p>Spanish/English · hybrid format</p><button class="btn-outline sm btn-region-cv" data-region="latam">Preview / Download</button></div>
+              <div class="tool-card" data-region="middleeast"><h3>🇦🇪 Middle East</h3><p>Photo common · nationality · visa</p><button class="btn-outline sm btn-region-cv" data-region="middleeast">Preview / Download</button></div>
+              <div class="tool-card" data-region="apac"><h3>🇸🇬 APAC</h3><p>Singapore/HK/AU · concise senior CV</p><button class="btn-outline sm btn-region-cv" data-region="apac">Preview / Download</button></div>
+              <div class="tool-card" data-region="africa"><h3>🌍 Africa</h3><p>Regional + global mobility focus</p><button class="btn-outline sm btn-region-cv" data-region="africa">Preview / Download</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="section-tools" class="section">
+          <div class="page-header"><h1>Tools</h1></div>
+          <div class="tools-grid">
+            <div class="tool-card"><h3>Boolean Builder</h3><p>Generate advanced Boolean & Google X-ray strings</p><button class="btn-outline sm" data-section="ai-search">Open</button></div>
+            <div class="tool-card"><h3>Resume Tailor</h3><p>AI optimize CV for specific JDs</p><button class="btn-outline sm" data-section="cv-match">Open</button></div>
+            <div class="tool-card"><h3>Cover Letter Generator</h3><p>Create tailored cover letters</p><button class="btn-outline sm" id="btnCoverLetter">Open</button></div>
+            <div class="tool-card"><h3>Application Tracker</h3><p>Full pipeline management</p><button class="btn-outline sm" data-section="applications">Open</button></div>
+          </div>
+        </section>
+
+        <section id="section-settings" class="section">
+          <div class="page-header">
+            <h1>Settings</h1>
+            <p>Profile, security, recovery email and preferences</p>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <h3 style="margin-bottom:.75rem">Profile</h3>
+            <div class="login-field"><label>Full name</label><input type="text" id="setName" value="Your Name" /></div>
+            <div class="login-field"><label>Title / headline</label><input type="text" id="setTitle" value="Global Talent Acquisition & Workforce Strategy Leader" /></div>
+            <div class="login-field"><label>Email</label><input type="email" id="setEmail" value="neeraj.kapil@example.com" /></div>
+            <div class="login-field"><label>Location</label><input type="text" id="setLocation" value="Gurugram, India · Global mobility" /></div>
+            <div class="login-field"><label>LinkedIn</label><input type="text" id="setLinkedIn" value="https://www.linkedin.com/in/neeraj-kapil/" /></div>
+            <div class="btn-row"><button class="btn-primary" id="btnSaveProfile">Save profile</button></div>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <h3 style="margin-bottom:.75rem">Change password</h3>
+            <div class="login-field"><label>Current password</label><input type="password" id="setCurrentPass" /></div>
+            <div class="login-field"><label>New password</label><input type="password" id="setNewPass" /></div>
+            <div class="login-field"><label>Confirm new password</label><input type="password" id="setConfirmPass" /></div>
+            <div class="btn-row"><button class="btn-primary" id="btnChangePass">Update password</button></div>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <h3 style="margin-bottom:.75rem">Password recovery</h3>
+            <p class="muted" style="margin-bottom:.75rem;font-size:.85rem">Email used to send a reset link if you forget your password.</p>
+            <div class="login-field"><label>Recovery email</label><input type="email" id="setRecoveryEmail" value="neeraj.kapil@example.com" /></div>
+            <div class="btn-row">
+              <button class="btn-primary" id="btnSaveRecovery">Save recovery email</button>
+              <button class="btn-outline" id="btnTestRecovery">Send test recovery email</button>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:1rem">
+            <h3 style="margin-bottom:.75rem">Photo & resume</h3>
+            <div class="btn-row" style="flex-wrap:wrap">
+              <label class="btn-outline" style="cursor:pointer;margin:0">Change photo<input type="file" id="setPhotoUpload" accept="image/*" style="display:none" /></label>
+              <label class="btn-outline" style="cursor:pointer;margin:0">Upload resume<input type="file" id="setResumeUpload" accept=".pdf,.doc,.docx" style="display:none" /></label>
+            </div>
+            <p id="setFileLabel" class="muted" style="margin-top:.5rem;font-size:.8rem"></p>
+          </div>
+          <div class="card">
+            <h3 style="margin-bottom:.75rem">Preferences</h3>
+            <label class="toggle"><input type="checkbox" id="prefEmailAlerts" checked> Email alerts for high-match jobs</label>
+            <label class="toggle"><input type="checkbox" id="prefWeekly" checked> Weekly summary report</label>
+            <label class="toggle"><input type="checkbox" id="prefRealtime" checked> Real-time dashboard updates</label>
+            <div class="btn-row" style="margin-top:.75rem"><button class="btn-primary" id="btnSavePrefs">Save preferences</button></div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast"></div>
+
+  <!-- Login Overlay -->
+  <div class="login-overlay" id="loginOverlay">
+    <div class="login-card">
+      <div class="logo-row">
+        <div class="logo-icon" style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#7c3aed,#a78bfa);display:grid;place-items:center;color:#fff">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <strong style="font-size:1rem">TA Job Search Hub</strong>
+          <div style="font-size:.75rem;color:#64748b">AI Job Search & Intelligence</div>
+        </div>
+      </div>
+      <h1>Sign in</h1>
+      <p class="sub">Access your real-time TA leadership dashboard</p>
+      <div class="login-error" id="loginError">Invalid username or password</div>
+      <div class="login-field">
+        <label for="loginUser">Username</label>
+        <input type="text" id="loginUser" placeholder="Username" autocomplete="username" />
+      </div>
+      <div class="login-field">
+        <label for="loginPass">Password</label>
+        <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" />
+      </div>
+      <button class="btn-primary" id="btnLogin">Sign in</button>
+    </div>
+  </div>
+
+  <!-- Notification Panel -->
+  <div class="notif-panel" id="notifPanel">
+    <h4>Notifications <span id="notifCountLabel" style="color:#7c3aed;font-weight:600">(6)</span></h4>
+    <div id="notifList"></div>
+  </div>
+
+  <!-- AI Chat Panel -->
+  <div class="chat-panel" id="chatPanel">
+    <div class="chat-header">
+      <h3>AI Assistant</h3>
+      <button class="chat-close" id="btnCloseChat" aria-label="Close">×</button>
+    </div>
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg bot">Hi — I’m your TA Job Search Hub assistant. Ask me about jobs, Boolean searches, CV match, pipeline, sources, or anything on this dashboard.</div>
+    </div>
+    <div class="chat-input-row">
+      <input type="text" id="chatInput" placeholder="Ask anything about your job search…" />
+      <button type="button" id="btnChatSend">Send</button>
+    </div>
+  </div>
+
+  <!-- JD / Match Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box" id="modalBox">
+      <button class="modal-close" id="btnCloseModal">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Global Search Popup -->
+  <div class="modal-overlay" id="searchModal">
+    <div class="modal-box" style="max-width:780px;max-height:90vh;overflow-y:auto">
+      <button class="modal-close" id="btnCloseSearch">×</button>
+      <h2 style="margin-bottom:.35rem">Global search</h2>
+      <p class="muted" style="margin-bottom:1rem;font-size:.85rem">Enter job title, company, skills, city and country — results appear below based on your inputs.</p>
+      <div class="filters-row" style="flex-wrap:wrap;margin-bottom:.5rem;gap:.5rem">
+        <input type="text" id="gsQuery" placeholder="Job title (e.g. Sales Manager)" style="flex:1;min-width:160px" />
+        <input type="text" id="gsCompany" placeholder="Company (optional)" style="flex:1;min-width:140px" />
+      </div>
+      <div class="filters-row" style="flex-wrap:wrap;margin-bottom:.5rem;gap:.5rem">
+        <input type="text" id="gsSkills" placeholder="Skills (e.g. B2B, SaaS)" style="flex:1;min-width:140px" />
+        <input type="text" id="gsLocation" placeholder="City (e.g. Gurgaon)" style="flex:1;min-width:120px" />
+      </div>
+      <div class="filters-row" style="flex-wrap:wrap;margin-bottom:1rem;gap:.5rem">
+        <select id="gsCountry" class="sm-select">
+          <option value="">Any country</option>
+          <option>India</option>
+          <option>United Kingdom</option>
+          <option>United States</option>
+          <option>Singapore</option>
+          <option>UAE</option>
+          <option>Germany</option>
+          <option>Netherlands</option>
+          <option>Canada</option>
+          <option>Australia</option>
+          <option>South Africa</option>
+          <option>Brazil</option>
+          <option>Remote / Worldwide</option>
+        </select>
+        <select id="gsType" class="sm-select">
+          <option value="jobs">Jobs</option>
+          <option value="companies">Companies</option>
+          <option value="skills">Skills + roles</option>
+        </select>
+        <button class="btn-primary" id="btnRunGlobalSearch">Search</button>
+      </div>
+      <div id="searchStatus" class="muted" style="font-size:.8rem;margin-bottom:.5rem;display:none"></div>
+      <div id="searchResultsBox" style="display:none">
+        <div id="searchResultsList" class="job-list" style="max-height:360px;overflow-y:auto;margin-bottom:1rem"></div>
+        <p style="font-size:.82rem;margin-bottom:.4rem"><strong>Also open on:</strong></p>
+        <div id="searchResultLinks" style="display:flex;flex-wrap:wrap;gap:.5rem"></div>
+      </div>
+    </div>
+  </div>
+
+  
+<script>
+/* ============================================================
+   TA Job Search Hub – Full interactive app logic
+   ============================================================ */
+(function () {
+  "use strict";
+
+  var AUTH_USER = "user";
+  var AUTH_PASS = "changeme";
+  var SESSION_KEY = "ta_hub_session_v1";
+  var STORE_KEY = "ta_hub_profile_v1";
+  var ALERTS_KEY = "ta_hub_alerts_v1";
+  var PASS_KEY = "ta_hub_pass_v1";
+
+  var $ = function (sel, ctx) { return (ctx || document).querySelector(sel); };
+  var $$ = function (sel, ctx) { return Array.from((ctx || document).querySelectorAll(sel)); };
+
+  function toast(msg, duration) {
+    duration = duration || 2800;
+    var t = $("#toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove("show"); }, duration);
+  }
+
+  function loadPass() {
+    try {
+      var p = localStorage.getItem(PASS_KEY);
+      if (p) AUTH_PASS = p;
+    } catch (e) {}
+  }
+  loadPass();
+
+  // ---------- Profile (generic defaults) ----------
+  var PROFILE = {
+    name: "Your Name",
+    title: "Talent Acquisition Professional",
+    email: "you@example.com",
+    recoveryEmail: "you@example.com",
+    location: "Your City · Remote / Hybrid preferred",
+    linkedin: "https://www.linkedin.com/in/your-profile/",
+    about: "Experienced Talent Acquisition professional focused on building scalable hiring systems, leadership pipelines, and high-performing teams.",
+    photoData: null,
+    resumeName: null,
+    skills: ["Talent Acquisition", "Recruiting", "Leadership Hiring", "Employer Branding", "Sourcing", "Interviewing", "TA Operations", "Workforce Planning"],
+    experienceYears: 8,
+    industries: ["Technology", "Professional Services"],
+    missingForTarget: ["HR Analytics", "People Analytics", "Talent Intelligence", "AI Recruitment"]
+  };
+
+  try {
+    var saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved) {
+      Object.keys(saved).forEach(function (k) { PROFILE[k] = saved[k]; });
+    }
+  } catch (e) {}
+
+  function saveProfile() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(PROFILE)); } catch (e) {}
+  }
+
+  var JOB_ALERTS = [];
+  try {
+    JOB_ALERTS = JSON.parse(localStorage.getItem(ALERTS_KEY) || "[]");
+  } catch (e) { JOB_ALERTS = []; }
+  if (!JOB_ALERTS.length) {
+    JOB_ALERTS = [
+      { id: 1, title: "VP Talent Acquisition", location: "Europe / Remote", salary: "150K+", match: 80, hits: 3, last: "12 min ago" },
+      { id: 2, title: "Director Talent Acquisition", location: "Singapore / UAE", salary: "140K+", match: 85, hits: 2, last: "1 hour ago" },
+      { id: 3, title: "Head of TA", location: "India / APAC", salary: "120K+", match: 80, hits: 5, last: "3 hours ago" }
+    ];
+  }
+  function saveAlerts() {
+    try { localStorage.setItem(ALERTS_KEY, JSON.stringify(JOB_ALERTS)); } catch (e) {}
+  }
+
+  var REGION_CV = {
+    india: { name: "India", notes: "Include notice period, detailed education, preferred locations. Photo optional.", layout: "Name · Contact · Summary · Experience (detailed) · Education · Skills · Certifications" },
+    europe: { name: "Europe (GDPR)", notes: "No photo, no date of birth, no marital status. Skills-first, 2 pages max.", layout: "Name · Contact · Professional summary · Core skills · Experience · Education" },
+    uk: { name: "United Kingdom", notes: "2 pages preferred. Quantified achievements. No photo.", layout: "Name · Contact · Profile · Key achievements · Experience · Education · Skills" },
+    northamerica: { name: "North America (US/Canada)", notes: "No photo. Impact metrics and scope. 1–2 pages.", layout: "Name · Contact · Summary · Experience (impact bullets) · Skills · Education" },
+    latam: { name: "LATAM", notes: "English and/or Spanish. Hybrid US + regional norms.", layout: "Name · Contact · Resumen · Experiencia · Educación · Skills" },
+    middleeast: { name: "Middle East", notes: "Photo often expected. Nationality and visa status helpful.", layout: "Photo · Name · Nationality/Visa · Summary · Experience · Education · Skills" },
+    apac: { name: "APAC (SG/HK/AU)", notes: "Concise senior CV. Regional + global scope clear.", layout: "Name · Contact · Executive summary · Experience · Education · Skills" },
+    africa: { name: "Africa", notes: "Regional mobility and multi-country experience emphasized.", layout: "Name · Contact · Summary · Experience · Education · Languages · Skills" }
+  };
+
+  // ---------- Curated jobs (realtime-sim) ----------
+  var CURATED_JOBS = [
+    { id: 1, title: "VP Talent Acquisition", company: "Global Technology Solutions", match: 94, tags: ["AI Transformation", "Global TA", "Executive Search"], loc: "London, UK · Hybrid", salary: "$180K – $220K", exp: "15+ Yrs", posted: "2 hours ago", source: "Company Site", jd: "Lead global TA strategy across EMEA and APAC. Drive AI-enabled hiring systems, leadership pipelines, and employer brand for a 12,000-person tech organisation." },
+    { id: 2, title: "Global Head of Talent Acquisition", company: "FinTech Innovations", match: 89, tags: ["Global TA", "Talent Strategy", "Leadership"], loc: "Singapore · Remote", salary: "$160K – $210K", exp: "15+ Yrs", posted: "3 hours ago", source: "LinkedIn", jd: "Own end-to-end global TA for a high-growth FinTech. Build scalable hiring engines, partner with C-suite on succession, and implement modern TA tech stack." },
+    { id: 3, title: "Director of Talent Acquisition", company: "NextGen Digital", match: 86, tags: ["Scaling Teams", "TA Operations", "HR Tech"], loc: "Dubai, UAE · Hybrid", salary: "$150K – $190K", exp: "12+ Yrs", posted: "5 hours ago", source: "Indeed", jd: "Scale TA operations across MENA. Lead TA ops, recruitment marketing, and HR tech adoption while delivering quality-of-hire improvements." },
+    { id: 4, title: "Head of Talent Acquisition – APAC", company: "CloudScale Systems", match: 91, tags: ["APAC", "Leadership Hiring", "Remote-first"], loc: "Bangalore / Singapore · Hybrid", salary: "$140K – $185K", exp: "12+ Yrs", posted: "6 hours ago", source: "Company Site", jd: "Build APAC TA capability for a remote-first SaaS leader. Focus on engineering and product leadership hiring." },
+    { id: 5, title: "Senior Director, Global TA", company: "Horizon Payments", match: 88, tags: ["Payments", "Global Mobility", "DEI"], loc: "Amsterdam · Hybrid", salary: "$170K – $205K", exp: "14+ Yrs", posted: "8 hours ago", source: "LinkedIn", jd: "Drive global TA excellence for a payments platform operating in 40+ markets. Strong DEI and mobility agenda." },
+    { id: 6, title: "VP Talent Acquisition, EMEA", company: "TerraNova Soft", match: 92, tags: ["EMEA", "Enterprise TA", "Workforce Strategy"], loc: "Berlin / Remote", salary: "$175K – $215K", exp: "15+ Yrs", posted: "10 hours ago", source: "Executive Search", jd: "Lead EMEA TA for enterprise software. Own leadership hiring, TA transformation, and regional employer brand." },
+    { id: 7, title: "Director – Talent Acquisition (Global)", company: "PayFlow International", match: 90, tags: ["FinTech", "Global TA", "AI Hiring"], loc: "Gurugram / Hybrid", salary: "$130K – $170K", exp: "12+ Yrs", posted: "12 hours ago", source: "Naukri", jd: "Scale global TA for a payments company across 30+ countries. Strong focus on AI hiring systems and quality of hire." },
+    { id: 8, title: "Head of TA & Employer Brand", company: "NovaHealth Tech", match: 85, tags: ["Employer Brand", "TA Leadership", "Healthcare Tech"], loc: "Dubai · Hybrid", salary: "$145K – $180K", exp: "12+ Yrs", posted: "1 day ago", source: "Bayt", jd: "Combine TA leadership with employer brand strategy for a fast-growing health-tech platform in MENA." }
+  ];
+
+  var APPLICATIONS = [
+    { company: "Microsoft", role: "Director – Talent Acquisition", status: "interview", statusLabel: "Interview 2", applied: "12 Aug 2026", updated: "1 day ago", loc: "Hyderabad / Remote", stage: "Panel + Hiring Manager" },
+    { company: "Amazon", role: "Head of Talent Acquisition", status: "interview", statusLabel: "Interview 1", applied: "10 Aug 2026", updated: "2 days ago", loc: "Bangalore · Hybrid", stage: "Recruiter screen done" },
+    { company: "Google", role: "VP Talent Acquisition", status: "screening", statusLabel: "Screening", applied: "08 Aug 2026", updated: "3 days ago", loc: "Singapore / Remote", stage: "Awaiting HM feedback" },
+    { company: "Salesforce", role: "Director TA – APAC", status: "applied", statusLabel: "Applied", applied: "05 Aug 2026", updated: "5 days ago", loc: "Singapore", stage: "Application under review" },
+    { company: "Shopify", role: "Global TA Lead", status: "applied", statusLabel: "Applied", applied: "04 Aug 2026", updated: "6 days ago", loc: "Remote – EMEA", stage: "Submitted" },
+    { company: "Stripe", role: "Head of Talent, International", status: "screening", statusLabel: "Screening", applied: "02 Aug 2026", updated: "1 week ago", loc: "Dublin / Remote", stage: "TA ops screen" },
+    { company: "Acme Corp", role: "Global TA Leader (internal path)", status: "interview", statusLabel: "Interview 3", applied: "28 Jul 2026", updated: "4 days ago", loc: "Gurugram", stage: "Final leadership round" },
+    { company: "ServiceNow", role: "Senior Director, Global TA", status: "applied", statusLabel: "Applied", applied: "01 Aug 2026", updated: "1 week ago", loc: "Amsterdam · Hybrid", stage: "Recruiter reviewing" }
+  ];
+
+  var INTERVIEWS = [
+    { company: "Microsoft", role: "Director – Talent Acquisition", round: "Interview 2 – Panel", when: "Tomorrow, 10:00 AM IST", mode: "Video (Teams)", interviewer: "VP HR + TA Lead", prep: "Prepare global TA transformation case; metrics on quality-of-hire and AI hiring systems at Your Company.", status: "upcoming" },
+    { company: "Amazon", role: "Head of Talent Acquisition", round: "Interview 1 – Hiring Manager", when: "Fri 22 Aug, 3:30 PM IST", mode: "Video (Chime)", interviewer: "Director, People Experience", prep: "Leadership principles examples; scaling TA in high-growth environments.", status: "upcoming" },
+    { company: "Acme Corp", role: "Global TA Leader", round: "Interview 3 – Final", when: "Mon 25 Aug, 11:00 AM IST", mode: "On-site / Hybrid Gurugram", interviewer: "CHRO + CEO", prep: "3-year TA roadmap; cost avoidance and capability-building outcomes.", status: "upcoming" },
+    { company: "Google", role: "VP Talent Acquisition", round: "Recruiter screen", when: "Completed 18 Aug", mode: "Phone", interviewer: "Executive Recruiter", prep: "—", status: "completed" },
+    { company: "Stripe", role: "Head of Talent, International", round: "TA Ops screen", when: "Completed 15 Aug", mode: "Video", interviewer: "TA Partner", prep: "—", status: "completed" },
+    { company: "Microsoft", role: "Director – Talent Acquisition", round: "Interview 1 – Recruiter", when: "Completed 14 Aug", mode: "Video", interviewer: "Senior Recruiter", prep: "—", status: "completed" }
+  ];
+
+  var OFFERS = [
+    { company: "Horizon Regional Bank", role: "Director of Talent Acquisition", comp: "$155K base + 20% bonus", equity: "—", location: "Dubai · Hybrid", deadline: "29 Aug 2026", status: "Under review" },
+    { company: "ScaleUp SaaS", role: "Head of Global TA", comp: "$165K base + 15% bonus", equity: "0.15% options", location: "Remote – EMEA", deadline: "02 Sep 2026", status: "Negotiating" },
+    { company: "PayBridge", role: "VP Talent Acquisition", comp: "$190K base + 25% bonus", equity: "RSUs", location: "London / Hybrid", deadline: "05 Sep 2026", status: "Received" }
+  ];
+
+  var NOTIFICATIONS = [
+    { id: 1, text: "New high-match role: VP Talent Acquisition at Global Technology Solutions (94%)", time: "12 min ago", unread: true },
+    { id: 2, text: "Microsoft interview reminder – Director TA, tomorrow 10:00 AM IST", time: "1 hour ago", unread: true },
+    { id: 3, text: "3 new AI-curated jobs match your profile above 85%", time: "2 hours ago", unread: true },
+    { id: 4, text: "Application response from Salesforce – Screening scheduled", time: "Yesterday", unread: true },
+    { id: 5, text: "Your CV match score improved to 87% after last profile update", time: "Yesterday", unread: true },
+    { id: 6, text: "Weekly TA market brief: Director/VP openings up 12% in EMEA", time: "2 days ago", unread: true }
+  ];
+
+  var PIPELINE = { saved: 42, applied: 24, screening: 8, interview: 5, offer: 3 };
+
+  var ANALYTICS = {
+    daily:   { apps: 2, responses: 1, interviews: 1, offers: 0, respRate: 50, intRate: 100 },
+    weekly:  { apps: 6, responses: 3, interviews: 2, offers: 1, respRate: 50, intRate: 67 },
+    monthly: { apps: 24, responses: 8, interviews: 5, offers: 3, respRate: 33, intRate: 63 },
+    quarterly:{ apps: 61, responses: 22, interviews: 14, offers: 5, respRate: 36, intRate: 64 },
+    annually:{ apps: 198, responses: 72, interviews: 41, offers: 11, respRate: 36, intRate: 57 }
+  };
+
+  var SOURCES_PERF = [
+    { name: "LinkedIn", icon: "in", count: 32, pct: 90 },
+    { name: "Company Sites", icon: "co", count: 28, pct: 78 },
+    { name: "Indeed", icon: "in2", count: 18, pct: 50 },
+    { name: "Recruitment Agencies", icon: "ag", count: 12, pct: 33 },
+    { name: "Glassdoor", icon: "gl", count: 8, pct: 22 },
+    { name: "Executive Search Firms", icon: "ex", count: 7, pct: 19 },
+    { name: "Naukri / iimjobs", icon: "nk", count: 5, pct: 14 }
+  ];
+
+  var SOURCES_DIR = [
+    { name: "Remotive", region: "Remote / Global", type: "Live API" },
+    { name: "Arbeitnow", region: "Europe / Global", type: "Live API" },
+    { name: "Jobicy", region: "Remote / Global", type: "Live API" },
+    { name: "The Muse", region: "Global", type: "Live API" },
+    { name: "LinkedIn Jobs", region: "Global", type: "Global board" },
+    { name: "Indeed", region: "Global", type: "Global board" },
+    { name: "Glassdoor", region: "Global", type: "Global board" },
+    { name: "Jooble", region: "Global Aggregator", type: "Global board" },
+    { name: "Careerjet", region: "Global Aggregator", type: "Global board" },
+    { name: "Adzuna", region: "Global Aggregator", type: "Global board" },
+    { name: "Naukri", region: "India", type: "Global board" },
+    { name: "Shine", region: "India", type: "Global board" },
+    { name: "iimjobs", region: "India", type: "Global board" },
+    { name: "Reed", region: "UK", type: "Global board" },
+    { name: "TotalJobs", region: "UK", type: "Global board" },
+    { name: "StepStone", region: "Europe / Germany", type: "Global board" },
+    { name: "Bayt", region: "MENA", type: "Global board" },
+    { name: "GulfTalent", region: "MENA", type: "Global board" },
+    { name: "Seek", region: "AU / NZ", type: "Global board" },
+    { name: "JobStreet", region: "APAC", type: "Global board" },
+    { name: "Dice", region: "USA", type: "Global board" },
+    { name: "Wellfound", region: "USA / Startup", type: "Global board" },
+    { name: "We Work Remotely", region: "Remote", type: "Global board" },
+    { name: "RemoteOK", region: "Remote", type: "Global board" },
+    { name: "Executive Search Network", region: "Global", type: "Executive Search" },
+    { name: "Spencer Stuart / Heidrick boards", region: "Global", type: "Executive Search" }
+  ];
+
+  // ---------- Auth ----------
+  function isLoggedIn() {
+    try { return sessionStorage.getItem(SESSION_KEY) === "1"; } catch (e) { return false; }
+  }
+  function setLoggedIn(v) {
+    try {
+      if (v) sessionStorage.setItem(SESSION_KEY, "1");
+      else sessionStorage.removeItem(SESSION_KEY);
+    } catch (e) {}
+  }
+  function showLogin() {
+    var o = $("#loginOverlay");
+    if (o) o.classList.remove("hidden");
+  }
+  function hideLogin() {
+    var o = $("#loginOverlay");
+    if (o) o.classList.add("hidden");
+  }
+  function tryLogin() {
+    var u = ($("#loginUser") && $("#loginUser").value.trim()) || "";
+    var p = ($("#loginPass") && $("#loginPass").value) || "";
+    var err = $("#loginError");
+    if (u === AUTH_USER && p === AUTH_PASS) {
+      setLoggedIn(true);
+      hideLogin();
+      if (err) err.style.display = "none";
+      toast("Welcome back");
+      startRealtime();
+      return;
+    }
+    if (err) err.style.display = "block";
+    toast("Invalid username or password");
+  }
+
+  // ---------- Navigation ----------
+  function showSection(id) {
+    if (!id) return;
+    $$(".section").forEach(function (s) { s.classList.remove("active"); });
+    var target = $("#section-" + id);
+    if (target) target.classList.add("active");
+    $$(".nav-item").forEach(function (n) { n.classList.remove("active"); });
+    var nav = $('.nav-item[data-section="' + id + '"]');
+    if (nav) nav.classList.add("active");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    closeSidebar();
+    if (id === "analytics") {
+      setTimeout(function () { initCharts(); }, 50);
+    }
+    if (id === "curated") renderCuratedJobs();
+    if (id === "applications") renderApplications();
+    if (id === "interviews") renderInterviews();
+    if (id === "offers") renderOffers();
+    if (id === "alerts") renderAlerts();
+    if (id === "mycv") syncProfileUI();
+    if (id === "settings") fillSettingsForm();
+  }
+
+  function renderAlerts() {
+    var list = $("#alertsList");
+    if (!list) return;
+    if (!JOB_ALERTS.length) {
+      list.innerHTML = '<p class="muted">No alerts yet. Create one above.</p>';
+      return;
+    }
+    list.innerHTML = JOB_ALERTS.map(function (a) {
+      return (
+        '<div class="job-card" style="flex-direction:column;align-items:stretch;margin-bottom:.65rem">' +
+        '<div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">' +
+        "<div><h3 style='font-size:.9rem'>" + a.title + "</h3>" +
+        "<div style='font-size:.8rem;color:#64748b'>" + a.location + " · " + a.salary + " · Match ≥ " + a.match + "%</div></div>" +
+        '<span class="status interview">' + a.hits + " new</span></div>" +
+        '<div class="job-meta" style="margin-top:.4rem"><span>Last match: ' + a.last + "</span>" +
+        '<button class="btn-ghost btn-run-alert" data-aid="' + a.id + '" style="padding:2px 8px;font-size:12px">Search now</button>' +
+        '<button class="btn-ghost btn-del-alert" data-aid="' + a.id + '" style="padding:2px 8px;font-size:12px">Delete</button></div></div>'
+      );
+    }).join("");
+  }
+
+  function openGlobalSearch(prefill) {
+    var m = $("#searchModal");
+    if (m) m.classList.add("open");
+    var q = $("#gsQuery");
+    if (q) {
+      if (prefill) q.value = prefill;
+      setTimeout(function () { q.focus(); }, 100);
+    }
+  }
+  function closeGlobalSearch() {
+    var m = $("#searchModal");
+    if (m) m.classList.remove("open");
+  }
+  function runGlobalSearch() {
+    var q = (($("#gsQuery") && $("#gsQuery").value) || "").trim();
+    var company = (($("#gsCompany") && $("#gsCompany").value) || "").trim();
+    var skills = (($("#gsSkills") && $("#gsSkills").value) || "").trim();
+    var loc = (($("#gsLocation") && $("#gsLocation").value) || "").trim();
+    var country = (($("#gsCountry") && $("#gsCountry").value) || "").trim();
+    var type = (($("#gsType") && $("#gsType").value) || "jobs");
+    if (!q && !company && !skills && !loc && !country) {
+      toast("Enter a job title, company, skill, city, or country");
+      return;
+    }
+
+    var status = $("#searchStatus");
+    var box = $("#searchResultsBox");
+    var list = $("#searchResultsList");
+    var links = $("#searchResultLinks");
+    if (status) {
+      status.style.display = "block";
+      status.textContent = "Searching for matches…";
+    }
+    if (box) box.style.display = "block";
+    if (list) list.innerHTML = "<p class='muted'>Loading results…</p>";
+
+    var qLower = q.toLowerCase();
+    var companyLower = company.toLowerCase();
+    var skillsLower = skills.toLowerCase();
+    var locLower = loc.toLowerCase();
+    var countryLower = country.toLowerCase();
+
+    // Build results from curated jobs + generated matches based on inputs
+    var results = [];
+
+    // 1) Match curated / applications
+    CURATED_JOBS.forEach(function (j) {
+      var hay = (j.title + " " + j.company + " " + (j.tags || []).join(" ") + " " + j.loc + " " + j.source).toLowerCase();
+      var score = 0;
+      if (qLower && hay.indexOf(qLower) >= 0) score += 40;
+      if (qLower && j.title.toLowerCase().indexOf(qLower) >= 0) score += 30;
+      if (companyLower && j.company.toLowerCase().indexOf(companyLower) >= 0) score += 35;
+      if (skillsLower) {
+        skillsLower.split(/[, ]+/).forEach(function (sk) {
+          if (sk && hay.indexOf(sk) >= 0) score += 12;
+        });
+      }
+      if (locLower && hay.indexOf(locLower) >= 0) score += 25;
+      if (countryLower && countryLower !== "remote / worldwide" && hay.indexOf(countryLower) >= 0) score += 20;
+      if (countryLower.indexOf("remote") >= 0 && /remote|hybrid/i.test(j.loc)) score += 15;
+      if (score > 0 || (!qLower && !companyLower && (locLower || countryLower))) {
+        if (!qLower && !companyLower && !skillsLower && (locLower || countryLower)) {
+          if (locLower && hay.indexOf(locLower) < 0 && countryLower && hay.indexOf(countryLower) < 0 && countryLower.indexOf("remote") < 0) return;
+        }
+        results.push({
+          title: j.title,
+          company: j.company,
+          loc: j.loc,
+          source: j.source,
+          salary: j.salary,
+          match: j._liveMatch || j.match,
+          url: null,
+          jobId: j.id,
+          score: score || 10
+        });
+      }
+    });
+
+    // 2) Synthetic results tailored to user inputs (always reflect the query)
+    var cities = loc || (country === "India" ? "Gurgaon / Bangalore / Mumbai" : country || "Remote");
+    var titleBase = q || (type === "companies" ? "Careers" : type === "skills" ? "Roles requiring " + (skills || "key skills") : "Talent Acquisition");
+    var cos = company
+      ? [company]
+      : ["Leading Employer", "Growth Tech Co", "Global Enterprise", "Regional Leader", "Hiring Now"];
+    cos.forEach(function (co, i) {
+      var t = titleBase;
+      if (type === "jobs" && q) t = q;
+      if (type === "skills" && skills) t = (q || "Specialist") + " — " + skills;
+      if (type === "companies") t = "Open roles at " + co;
+      results.push({
+        title: t + (i === 0 ? "" : " (" + (i + 1) + ")"),
+        company: co,
+        loc: (loc ? loc + (country ? ", " + country : "") : country || "Remote / Hybrid"),
+        source: i % 3 === 0 ? "LinkedIn" : i % 3 === 1 ? "Indeed" : "Company Site",
+        salary: country === "India" || /gurgaon|bangalore|mumbai|delhi|hyderabad/i.test(loc) ? "₹15L – ₹45L" : "$80K – $160K",
+        match: Math.min(96, 72 + (q ? 10 : 0) + (company ? 8 : 0) + (skills ? 6 : 0)),
+        url: null,
+        jobId: null,
+        score: 50 - i * 5,
+        generated: true
+      });
+    });
+
+    // Sort by score
+    results.sort(function (a, b) { return (b.score || 0) - (a.score || 0); });
+    results = results.slice(0, 12);
+
+    function renderResultCards(extraLive) {
+      var all = results.slice();
+      if (extraLive && extraLive.length) {
+        extraLive.forEach(function (r) { all.push(r); });
+      }
+      // de-dupe by title+company
+      var seen = {};
+      all = all.filter(function (r) {
+        var k = (r.title + "|" + r.company).toLowerCase();
+        if (seen[k]) return false;
+        seen[k] = true;
+        return true;
+      }).slice(0, 15);
+
+      if (list) {
+        if (!all.length) {
+          list.innerHTML = "<p class='muted'>No matches for these filters. Try broader title or location.</p>";
+        } else {
+          list.innerHTML = all.map(function (r) {
+            var actions = r.jobId
+              ? '<button class="btn-ghost btn-view-jd" data-job-id="' + r.jobId + '">View JD</button>' +
+                '<button class="btn-primary sm btn-apply" data-job-id="' + r.jobId + '">Apply</button>'
+              : (r.url
+                ? '<button class="btn-primary sm btn-open-result" data-url="' + r.url.replace(/"/g, "&quot;") + '">Open</button>'
+                : '<button class="btn-outline sm btn-open-result" data-url="' +
+                  "https://www.google.com/search?q=" + encodeURIComponent(r.title + " " + r.company + " " + r.loc + " job") +
+                  '">Search this role</button>');
+            return (
+              '<div class="job-card">' +
+              '<div class="match-badge high">' + (r.match || "—") + '%<span>Match</span></div>' +
+              '<div class="job-content">' +
+              "<h3 style='font-size:.9rem'>" + r.title + "</h3>" +
+              '<div class="company-row"><span class="company">' + r.company + "</span></div>" +
+              '<div class="job-meta"><span>📍 ' + r.loc + "</span>" +
+              (r.salary ? "<span>💰 " + r.salary + "</span>" : "") +
+              '<span class="source">' + r.source + "</span></div></div>" +
+              '<div class="job-actions">' + actions + "</div></div>"
+            );
+          }).join("");
+        }
+      }
+      if (status) {
+        status.textContent = all.length + " result(s) for " +
+          [q, company, skills, loc, country].filter(Boolean).join(" · ");
+      }
+    }
+
+    renderResultCards([]);
+
+    // External deep links based on exact inputs
+    var googleParts = [];
+    if (q) googleParts.push('"' + q + '"');
+    if (company) googleParts.push(company);
+    if (skills) googleParts.push(skills);
+    if (loc) googleParts.push(loc);
+    if (country && country.indexOf("Remote") < 0) googleParts.push(country);
+    googleParts.push("(job OR jobs OR hiring OR careers)");
+    var googleQ = googleParts.join(" ");
+    var liKeywords = [q, company, skills].filter(Boolean).join(" ") || "jobs";
+    var liLoc = [loc, country].filter(Boolean).join(" ");
+    var indeedQ = [q, company, skills].filter(Boolean).join(" ") || "jobs";
+    var indeedL = loc || country || "";
+
+    if (links) {
+      var naukriSlug = encodeURIComponent((q || "jobs").toLowerCase().replace(/\s+/g, "-")) + "-jobs" +
+        (loc ? "-in-" + encodeURIComponent(loc.toLowerCase().replace(/\s+/g, "-")) : "");
+      links.innerHTML =
+        '<button class="btn-primary sm" id="btnOpenGoogleSearch" data-url="https://www.google.com/search?q=' + encodeURIComponent(googleQ) + '&tbs=qdr:m">Google</button>' +
+        '<button class="btn-outline sm" id="btnOpenLinkedInSearch" data-url="https://www.linkedin.com/jobs/search/?keywords=' + encodeURIComponent(liKeywords) + (liLoc ? "&location=" + encodeURIComponent(liLoc) : "") + '">LinkedIn</button>' +
+        '<button class="btn-outline sm" id="btnOpenIndeedSearch" data-url="https://www.indeed.com/jobs?q=' + encodeURIComponent(indeedQ) + (indeedL ? "&l=" + encodeURIComponent(indeedL) : "") + '">Indeed</button>' +
+        '<button class="btn-outline sm" id="btnOpenNaukriSearch" data-url="https://www.naukri.com/' + naukriSlug + '">Naukri</button>';
+    }
+
+    // Live fetch from Remotive (public API) when query present
+    var searchTerm = [q, company, skills].filter(Boolean).join(" ") || "talent";
+    fetch("https://remotive.com/api/remote-jobs?search=" + encodeURIComponent(searchTerm) + "&limit=10")
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        var live = [];
+        var jobs = (data && data.jobs) || [];
+        jobs.forEach(function (j) {
+          var hay = ((j.title || "") + " " + (j.company_name || "") + " " + (j.candidate_required_location || "") + " " + (j.tags || []).join(" ")).toLowerCase();
+          if (locLower && hay.indexOf(locLower) < 0 && countryLower && countryLower.indexOf("remote") < 0 && hay.indexOf(countryLower) < 0) {
+            // still include remote jobs if country is remote/worldwide or empty
+            if (country && country.indexOf("Remote") < 0 && loc) return;
+          }
+          if (companyLower && (j.company_name || "").toLowerCase().indexOf(companyLower) < 0) return;
+          live.push({
+            title: j.title,
+            company: j.company_name || "Company",
+            loc: j.candidate_required_location || "Remote",
+            source: "Remotive (live)",
+            salary: j.salary || "—",
+            match: 78,
+            url: j.url,
+            jobId: null,
+            score: 60
+          });
+        });
+        renderResultCards(live);
+        toast(results.length + live.length + " results found");
+      })
+      .catch(function () {
+        renderResultCards([]);
+        toast(results.length + " results (live API unavailable — showing matched + generated)");
+      });
+  }
+
+  function syncProfileUI() {
+    if ($("#profileNameDisplay")) $("#profileNameDisplay").textContent = PROFILE.name;
+    if ($("#profileTitleDisplay")) $("#profileTitleDisplay").textContent = PROFILE.title;
+    if ($("#profileLocationDisplay")) $("#profileLocationDisplay").textContent = PROFILE.location;
+    if ($("#profileAboutText")) $("#profileAboutText").textContent = PROFILE.about;
+    if ($("#mycvSubtitle")) $("#mycvSubtitle").textContent = PROFILE.name + " · " + PROFILE.title;
+    if ($("#profilePhoto") && PROFILE.photoData) $("#profilePhoto").src = PROFILE.photoData;
+    if ($("#resumeFileLabel") && PROFILE.resumeName) $("#resumeFileLabel").textContent = "Resume on file: " + PROFILE.resumeName;
+    var av = $(".avatar");
+    if (av && PROFILE.photoData) av.src = PROFILE.photoData;
+    var un = $(".user-name");
+    if (un) un.textContent = PROFILE.name;
+  }
+
+  function fillSettingsForm() {
+    if ($("#setName")) $("#setName").value = PROFILE.name || "";
+    if ($("#setTitle")) $("#setTitle").value = PROFILE.title || "";
+    if ($("#setEmail")) $("#setEmail").value = PROFILE.email || "";
+    if ($("#setLocation")) $("#setLocation").value = PROFILE.location || "";
+    if ($("#setLinkedIn")) $("#setLinkedIn").value = PROFILE.linkedin || "";
+    if ($("#setRecoveryEmail")) $("#setRecoveryEmail").value = PROFILE.recoveryEmail || PROFILE.email || "";
+  }
+
+  function showRegionCv(region) {
+    var r = REGION_CV[region];
+    if (!r) return;
+    openModal(
+      "<h2>" + r.name + " CV template</h2>" +
+      "<p style='color:#64748b;margin-bottom:.75rem'>" + r.notes + "</p>" +
+      "<p><strong>Recommended structure</strong></p>" +
+      "<p style='font-size:.9rem;line-height:1.5;margin:.5rem 0'>" + r.layout + "</p>" +
+      "<p style='font-size:.85rem;margin-top:.75rem'><strong>Profile applied:</strong> " + PROFILE.name + " · " + PROFILE.title + "</p>" +
+      "<p style='font-size:.85rem'>" + (PROFILE.about || "").slice(0, 180) + "…</p>" +
+      '<div class="modal-actions">' +
+      '<button class="btn-primary btn-download-region" data-region="' + region + '">Download template text</button>' +
+      '<button class="btn-ghost" id="btnCloseModal2">Close</button></div>'
+    );
+  }
+
+  function downloadRegionCv(region) {
+    var r = REGION_CV[region];
+    if (!r) return;
+    var text =
+      PROFILE.name + "\n" + PROFILE.title + "\n" + PROFILE.location + "\n" + PROFILE.email + "\n" + PROFILE.linkedin + "\n\n" +
+      "REGION FORMAT: " + r.name + "\n" + r.notes + "\n\nSTRUCTURE:\n" + r.layout + "\n\nABOUT:\n" + PROFILE.about +
+      "\n\nCURRENT:\nYour Company · Talent Acquisition Leader · Present\n";
+    var blob = new Blob([text], { type: "text/plain" });
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "CV_" + PROFILE.name.replace(/\s+/g, "_") + "_" + region + ".txt";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast("Downloaded " + r.name + " CV template");
+  }
+
+  function handlePhotoFile(file) {
+    if (!file || !file.type.match(/^image\//)) {
+      toast("Please select an image file");
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      PROFILE.photoData = e.target.result;
+      saveProfile();
+      syncProfileUI();
+      toast("Photo updated");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleResumeFile(file) {
+    if (!file) return;
+    PROFILE.resumeName = file.name;
+    saveProfile();
+    syncProfileUI();
+    if ($("#setFileLabel")) $("#setFileLabel").textContent = "Resume: " + file.name;
+    if ($("#resumeFileLabel")) $("#resumeFileLabel").textContent = "Resume on file: " + file.name;
+    toast("Resume uploaded: " + file.name);
+  }
+
+  function openSidebar() {
+    var sb = $("#sidebar"), ov = $("#sidebarOverlay");
+    if (sb) sb.classList.add("open");
+    if (ov) ov.classList.add("show");
+    document.body.style.overflow = "hidden";
+  }
+  function closeSidebar() {
+    var sb = $("#sidebar"), ov = $("#sidebarOverlay");
+    if (sb) sb.classList.remove("open");
+    if (ov) ov.classList.remove("show");
+    document.body.style.overflow = "";
+  }
+
+  // ---------- Match scoring vs profile ----------
+  function scoreAgainstProfile(job) {
+    var score = 70;
+    var title = (job.title || "").toLowerCase();
+    var tags = (job.tags || []).join(" ").toLowerCase();
+    PROFILE.skills.forEach(function (sk) {
+      if (title.indexOf(sk.toLowerCase()) >= 0 || tags.indexOf(sk.toLowerCase()) >= 0) score += 3;
+    });
+    if (/vp|vice president|head of|director|global/i.test(job.title)) score += 8;
+    if (PROFILE.experienceYears >= 15) score += 5;
+    score = Math.min(98, Math.max(72, score + (job.match ? Math.round((job.match - 85) / 2) : 0)));
+    return score;
+  }
+
+  function missingSkillsFor(job) {
+    var base = PROFILE.missingForTarget.slice();
+    if (/analytics|intelligence|data/i.test(job.title + " " + (job.tags || []).join(" "))) {
+      base = ["People Analytics", "HR Analytics", "Talent Intelligence", "Workforce Planning"].concat(base);
+    }
+    // unique
+    var seen = {};
+    return base.filter(function (s) {
+      if (seen[s]) return false;
+      seen[s] = true;
+      return true;
+    }).slice(0, 4);
+  }
+
+  // ---------- Render curated jobs ----------
+  function jobCardHtml(j, m) {
+    return (
+      '<div class="job-card" data-job-id="' + j.id + '">' +
+      '<div class="match-badge high">' + m + '%<span>Match</span></div>' +
+      '<div class="job-content">' +
+      '<div class="job-title-row"><h3>' + j.title + '</h3>' +
+      '<div class="company-row"><span class="company">' + j.company + '</span> <span class="verified">✓</span></div></div>' +
+      '<div class="tags">' + j.tags.map(function (t) { return '<span class="tag">' + t + '</span>'; }).join("") + "</div>" +
+      '<div class="job-meta"><span>📍 ' + j.loc + "</span><span>💰 " + j.salary + "</span><span>⏱ " + j.exp + "</span><span>🕒 " + j.posted + '</span><span class="source">' + j.source + "</span></div>" +
+      "</div>" +
+      '<div class="job-actions">' +
+      '<button class="btn-ghost btn-view-jd" data-job-id="' + j.id + '">View JD</button>' +
+      '<button class="btn-ghost btn-cv-match" data-job-id="' + j.id + '">CV Match</button>' +
+      '<button class="btn-primary sm btn-apply" data-job-id="' + j.id + '">Apply</button>' +
+      '<button class="icon-btn bookmark" data-job-id="' + j.id + '" title="Save">🔖</button>' +
+      "</div></div>"
+    );
+  }
+
+  function renderCuratedJobs() {
+    var html = CURATED_JOBS.map(function (j) {
+      var m = scoreAgainstProfile(j);
+      j._liveMatch = m;
+      return jobCardHtml(j, m);
+    }).join("");
+    var list = $("#curatedJobsList");
+    if (list) list.innerHTML = html;
+    var full = $("#fullCuratedList");
+    if (full) full.innerHTML = html;
+    var countEl = document.querySelector("#section-curated .page-header p");
+    if (countEl) countEl.textContent = CURATED_JOBS.length + " AI-ranked TA leadership opportunities (live match vs your profile)";
+  }
+
+  function renderApplications() {
+    var body = $("#appsTableBody");
+    if (!body) return;
+    body.innerHTML = APPLICATIONS.map(function (a) {
+      return (
+        "<tr><td><strong>" + a.company + "</strong><div style='font-size:.72rem;color:#94a3b8'>" + a.loc + "</div></td>" +
+        "<td>" + a.role + "</td>" +
+        '<td><span class="status ' + a.status + '">' + a.statusLabel + "</span></td>" +
+        "<td>" + a.applied + "</td>" +
+        "<td>" + a.updated + "</td>" +
+        '<td><button class="btn-ghost btn-view-app" data-company="' + a.company + '" style="padding:4px 10px">View</button></td></tr>'
+      );
+    }).join("");
+    var fp = $("#fullPipeline");
+    if (fp) {
+      fp.innerHTML =
+        '<div class="stage"><span class="stage-count">' + PIPELINE.saved + '</span><span class="stage-label">Saved</span></div><div class="stage-arrow">→</div>' +
+        '<div class="stage"><span class="stage-count">' + PIPELINE.applied + '</span><span class="stage-label">Applied</span></div><div class="stage-arrow">→</div>' +
+        '<div class="stage"><span class="stage-count">' + PIPELINE.screening + '</span><span class="stage-label">Screening</span></div><div class="stage-arrow">→</div>' +
+        '<div class="stage"><span class="stage-count">' + PIPELINE.interview + '</span><span class="stage-label">Interview</span></div><div class="stage-arrow">→</div>' +
+        '<div class="stage"><span class="stage-count">' + PIPELINE.offer + '</span><span class="stage-label">Offer</span></div>';
+    }
+  }
+
+  function renderInterviews() {
+    var list = $("#interviewsList");
+    if (!list) return;
+    var upcoming = INTERVIEWS.filter(function (i) { return i.status === "upcoming"; });
+    var past = INTERVIEWS.filter(function (i) { return i.status === "completed"; });
+    var html = "<h3 style='font-size:.95rem;margin-bottom:.75rem'>Upcoming (" + upcoming.length + ")</h3>";
+    html += upcoming.map(function (i) {
+      return (
+        '<div class="job-card" style="flex-direction:column;align-items:stretch">' +
+        '<div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">' +
+        "<div><h3 style='font-size:.95rem'>" + i.company + " — " + i.role + "</h3>" +
+        "<div style='font-size:.82rem;color:#64748b;margin-top:2px'>" + i.round + "</div></div>" +
+        '<span class="status interview">' + i.when + "</span></div>" +
+        '<div class="job-meta" style="margin-top:.5rem"><span>📹 ' + i.mode + "</span><span>👤 " + i.interviewer + "</span></div>" +
+        (i.prep ? '<p style="font-size:.82rem;margin-top:.5rem;line-height:1.45"><strong>Prep:</strong> ' + i.prep + "</p>" : "") +
+        "</div>"
+      );
+    }).join("");
+    html += "<h3 style='font-size:.95rem;margin:1.25rem 0 .75rem'>Completed (" + past.length + ")</h3>";
+    html += past.map(function (i) {
+      return (
+        '<div class="job-card" style="opacity:.9">' +
+        "<div class='job-content'><h3 style='font-size:.9rem'>" + i.company + " — " + i.role + "</h3>" +
+        "<div style='font-size:.8rem;color:#64748b'>" + i.round + " · " + i.when + " · " + i.mode + "</div></div>" +
+        '<span class="status applied">Done</span></div>'
+      );
+    }).join("");
+    list.innerHTML = html;
+  }
+
+  function renderOffers() {
+    var list = $("#offersList");
+    if (!list) return;
+    list.innerHTML = OFFERS.map(function (o) {
+      return (
+        '<div class="job-card" style="flex-direction:column;align-items:stretch">' +
+        '<div style="display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap">' +
+        "<div><h3 style='font-size:.95rem'>" + o.role + "</h3>" +
+        "<div style='font-size:.85rem;color:#64748b'>" + o.company + " · " + o.location + "</div></div>" +
+        '<span class="status offer">' + o.status + "</span></div>" +
+        '<div class="job-meta" style="margin-top:.55rem"><span>💰 ' + o.comp + "</span>" +
+        (o.equity && o.equity !== "—" ? "<span>📈 " + o.equity + "</span>" : "") +
+        "<span>🗓 Decision by " + o.deadline + "</span></div></div>"
+      );
+    }).join("");
+  }
+
+  // ---------- Analytics period ----------
+  function applyAnalyticsPeriod(period) {
+    var d = ANALYTICS[period] || ANALYTICS.monthly;
+    var card = $(".analytics-card");
+    if (!card) return;
+    var vals = card.querySelectorAll(".stat-val");
+    if (vals[0]) vals[0].textContent = d.apps;
+    if (vals[1]) vals[1].textContent = d.responses;
+    if (vals[2]) vals[2].textContent = d.interviews;
+    if (vals[3]) vals[3].textContent = d.offers;
+    var rates = card.querySelectorAll(".rate strong");
+    if (rates[0]) rates[0].textContent = d.respRate + "%";
+    if (rates[1]) rates[1].textContent = d.intRate + "%";
+    var bars = card.querySelectorAll(".progress div");
+    if (bars[0]) bars[0].style.width = d.respRate + "%";
+    if (bars[1]) bars[1].style.width = d.intRate + "%";
+  }
+
+  function wireAnalyticsDropdown() {
+    var sel = $(".analytics-card .sm-select") || $(".analytics-card select");
+    if (sel) {
+      sel.innerHTML =
+        '<option value="daily">Today</option>' +
+        '<option value="weekly">This Week</option>' +
+        '<option value="monthly" selected>This Month</option>' +
+        '<option value="quarterly">This Quarter</option>' +
+        '<option value="annually">This Year</option>';
+      sel.addEventListener("change", function () {
+        applyAnalyticsPeriod(sel.value);
+        toast("Analytics updated: " + sel.options[sel.selectedIndex].text);
+      });
+    }
+    var ap = $("#analyticsPeriod");
+    if (ap) {
+      ap.addEventListener("change", function () {
+        updateAnalyticsKpis(ap.value);
+        updateChartsForPeriod(ap.value);
+        toast("Analytics period: " + ap.options[ap.selectedIndex].text);
+      });
+    }
+  }
+
+  // ---------- Chart.js analytics ----------
+  var chartInstances = {};
+  var TREND_DATA = {
+    daily:   { labels: ["6am", "9am", "12pm", "3pm", "6pm", "9pm"], apps: [0, 1, 0, 1, 0, 0] },
+    weekly:  { labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], apps: [1, 2, 0, 1, 1, 0, 1] },
+    monthly: { labels: ["W1", "W2", "W3", "W4"], apps: [5, 7, 6, 6] },
+    quarterly:{ labels: ["Jan", "Feb", "Mar"], apps: [18, 22, 21] },
+    annually:{ labels: ["Q1", "Q2", "Q3", "Q4"], apps: [42, 51, 48, 57] }
+  };
+
+  function destroyChart(id) {
+    if (chartInstances[id]) {
+      try { chartInstances[id].destroy(); } catch (e) {}
+      chartInstances[id] = null;
+    }
+  }
+
+  function updateAnalyticsKpis(period) {
+    var d = ANALYTICS[period] || ANALYTICS.monthly;
+    if ($("#aKpiApps")) $("#aKpiApps").textContent = d.apps;
+    if ($("#aKpiResp")) $("#aKpiResp").textContent = d.responses;
+    if ($("#aKpiInt")) $("#aKpiInt").textContent = d.interviews;
+    if ($("#aKpiOff")) $("#aKpiOff").textContent = d.offers;
+    if ($("#aKpiRespRate")) $("#aKpiRespRate").textContent = d.respRate + "%";
+    if ($("#aKpiIntRate")) $("#aKpiIntRate").textContent = d.intRate + "%";
+  }
+
+  function initCharts() {
+    if (typeof Chart === "undefined") {
+      console.warn("Chart.js not loaded");
+      return;
+    }
+    var purple = "#7c3aed";
+    var purpleSoft = "rgba(124,58,237,0.15)";
+    var green = "#10b981";
+    var blue = "#3b82f6";
+    var orange = "#f97316";
+    var teal = "#14b8a6";
+    var violet = "#8b5cf6";
+
+    // Funnel
+    destroyChart("funnel");
+    var fEl = $("#chartFunnel");
+    if (fEl) {
+      chartInstances.funnel = new Chart(fEl, {
+        type: "bar",
+        data: {
+          labels: ["Saved", "Applied", "Screening", "Interview", "Offer"],
+          datasets: [{
+            label: "Count",
+            data: [PIPELINE.saved, PIPELINE.applied, PIPELINE.screening, PIPELINE.interview, PIPELINE.offer],
+            backgroundColor: [purple, blue, orange, violet, green],
+            borderRadius: 8,
+            barThickness: 28
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Trend
+    destroyChart("trend");
+    var tEl = $("#chartTrend");
+    if (tEl) {
+      var td = TREND_DATA.monthly;
+      chartInstances.trend = new Chart(tEl, {
+        type: "line",
+        data: {
+          labels: td.labels,
+          datasets: [{
+            label: "Applications",
+            data: td.apps,
+            borderColor: purple,
+            backgroundColor: purpleSoft,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 4,
+            pointBackgroundColor: purple
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Sources horizontal bar
+    destroyChart("sources");
+    var sEl = $("#chartSources");
+    if (sEl) {
+      chartInstances.sources = new Chart(sEl, {
+        type: "bar",
+        data: {
+          labels: SOURCES_PERF.map(function (s) { return s.name; }),
+          datasets: [{
+            label: "Applications",
+            data: SOURCES_PERF.map(function (s) { return s.count; }),
+            backgroundColor: purple,
+            borderRadius: 6,
+            barThickness: 18
+          }]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { beginAtZero: true, grid: { color: "#f1f5f9" } },
+            y: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Status doughnut
+    destroyChart("status");
+    var stEl = $("#chartStatus");
+    if (stEl) {
+      var applied = APPLICATIONS.filter(function (a) { return a.status === "applied"; }).length;
+      var screening = APPLICATIONS.filter(function (a) { return a.status === "screening"; }).length;
+      var interview = APPLICATIONS.filter(function (a) { return a.status === "interview"; }).length;
+      chartInstances.status = new Chart(stEl, {
+        type: "doughnut",
+        data: {
+          labels: ["Applied", "Screening", "Interview"],
+          datasets: [{
+            data: [applied, screening, interview],
+            backgroundColor: [violet, orange, blue],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: "bottom", labels: { boxWidth: 12, padding: 14 } }
+          },
+          cutout: "58%"
+        }
+      });
+    }
+
+    // Match distribution
+    destroyChart("match");
+    var mEl = $("#chartMatch");
+    if (mEl) {
+      var buckets = { "70-79": 0, "80-89": 0, "90-100": 0 };
+      CURATED_JOBS.forEach(function (j) {
+        var m = j._liveMatch || j.match || 80;
+        if (m >= 90) buckets["90-100"]++;
+        else if (m >= 80) buckets["80-89"]++;
+        else buckets["70-79"]++;
+      });
+      chartInstances.match = new Chart(mEl, {
+        type: "bar",
+        data: {
+          labels: ["70–79%", "80–89%", "90–100%"],
+          datasets: [{
+            label: "Jobs",
+            data: [buckets["70-79"], buckets["80-89"], buckets["90-100"]],
+            backgroundColor: [orange, blue, green],
+            borderRadius: 8,
+            barThickness: 36
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: "#f1f5f9" } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // Rates by period
+    destroyChart("rates");
+    var rEl = $("#chartRates");
+    if (rEl) {
+      chartInstances.rates = new Chart(rEl, {
+        type: "bar",
+        data: {
+          labels: ["Today", "Week", "Month", "Quarter", "Year"],
+          datasets: [
+            {
+              label: "Response %",
+              data: [ANALYTICS.daily.respRate, ANALYTICS.weekly.respRate, ANALYTICS.monthly.respRate, ANALYTICS.quarterly.respRate, ANALYTICS.annually.respRate],
+              backgroundColor: purple,
+              borderRadius: 6
+            },
+            {
+              label: "Interview %",
+              data: [ANALYTICS.daily.intRate, ANALYTICS.weekly.intRate, ANALYTICS.monthly.intRate, ANALYTICS.quarterly.intRate, ANALYTICS.annually.intRate],
+              backgroundColor: green,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } },
+          scales: {
+            y: { beginAtZero: true, max: 100, grid: { color: "#f1f5f9" } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+  }
+
+  function updateChartsForPeriod(period) {
+    updateAnalyticsKpis(period);
+    var td = TREND_DATA[period] || TREND_DATA.monthly;
+    if (chartInstances.trend) {
+      chartInstances.trend.data.labels = td.labels;
+      chartInstances.trend.data.datasets[0].data = td.apps;
+      chartInstances.trend.update();
+    }
+    var d = ANALYTICS[period] || ANALYTICS.monthly;
+    if (chartInstances.funnel) {
+      // scale funnel roughly with period
+      var scale = d.apps / (ANALYTICS.monthly.apps || 24);
+      chartInstances.funnel.data.datasets[0].data = [
+        Math.round(PIPELINE.saved * Math.max(0.3, scale)),
+        d.apps,
+        Math.max(1, Math.round(d.apps * 0.33)),
+        d.interviews,
+        d.offers
+      ];
+      chartInstances.funnel.update();
+    }
+  }
+
+  // ---------- Sources performance ----------
+  function renderSourceBars() {
+    var wrap = $(".source-bars");
+    if (!wrap) return;
+    wrap.innerHTML = SOURCES_PERF.map(function (s) {
+      return (
+        '<div class="source-bar">' +
+        '<span class="src-name">' + s.name + "</span>" +
+        '<div class="bar-track"><div class="bar" style="width:' + s.pct + '%"></div></div>' +
+        '<span class="src-count">' + s.count + "</span></div>"
+      );
+    }).join("");
+  }
+
+  function renderSourcesDir(filter, region) {
+    filter = filter || "";
+    region = region || "";
+    var body = $("#sourcesBody");
+    if (!body) return;
+    var filtered = SOURCES_DIR.filter(function (s) {
+      var mt = !filter || s.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0 || s.region.toLowerCase().indexOf(filter.toLowerCase()) >= 0;
+      var mr = !region || s.region.indexOf(region) >= 0 || (region === "Global / Remote" && (s.region.indexOf("Global") >= 0 || s.region.indexOf("Remote") >= 0));
+      return mt && mr;
+    });
+    body.innerHTML = filtered.map(function (s) {
+      return "<tr><td><strong>" + s.name + "</strong></td><td>" + s.region + '</td><td><span class="tag">' + s.type + '</span></td><td>' +
+        '<button class="btn-ghost btn-open-source" data-name="' + s.name + '" style="padding:4px 10px;font-size:12px">Open</button> ' +
+        '<button class="btn-ghost btn-xray-source" data-name="' + s.name + '" style="padding:4px 10px;font-size:12px">TA X-ray</button></td></tr>';
+    }).join("");
+  }
+
+  // ---------- Pipeline ----------
+  function renderPipeline() {
+    var stages = $$(".pipeline-stages .stage-count");
+    var vals = [PIPELINE.saved, PIPELINE.applied, PIPELINE.screening, PIPELINE.interview, PIPELINE.offer];
+    stages.forEach(function (el, i) {
+      if (vals[i] != null) el.textContent = vals[i];
+    });
+  }
+
+  // ---------- Notifications ----------
+  function renderNotifs() {
+    var list = $("#notifList");
+    if (!list) return;
+    var unread = NOTIFICATIONS.filter(function (n) { return n.unread; }).length;
+    var label = $("#notifCountLabel");
+    if (label) label.textContent = "(" + unread + ")";
+    var dot = $(".notif-dot");
+    if (dot) {
+      dot.textContent = String(unread);
+      dot.style.display = unread ? "grid" : "none";
+    }
+    list.innerHTML = NOTIFICATIONS.map(function (n) {
+      return '<div class="notif-item' + (n.unread ? " unread" : "") + '" data-nid="' + n.id + '">' +
+        n.text + '<div class="n-time">' + n.time + "</div></div>";
+    }).join("");
+  }
+
+  function toggleNotifPanel() {
+    var p = $("#notifPanel");
+    if (!p) return;
+    p.classList.toggle("open");
+    if (p.classList.contains("open")) {
+      NOTIFICATIONS.forEach(function (n) { n.unread = false; });
+      setTimeout(renderNotifs, 800);
+    }
+  }
+
+  // ---------- Modal ----------
+  function openModal(html) {
+    var c = $("#modalContent");
+    var o = $("#modalOverlay");
+    if (c) c.innerHTML = html;
+    if (o) o.classList.add("open");
+  }
+  function closeModal() {
+    var o = $("#modalOverlay");
+    if (o) o.classList.remove("open");
+  }
+
+  function viewJD(jobId) {
+    var job = CURATED_JOBS.find(function (j) { return j.id === Number(jobId); });
+    if (!job) return;
+    var m = job._liveMatch || scoreAgainstProfile(job);
+    openModal(
+      "<h2>" + job.title + "</h2>" +
+      "<p style='color:#64748b;margin-bottom:.75rem'>" + job.company + " · " + job.loc + "</p>" +
+      "<p><strong>Match with your profile:</strong> <span style='color:#7c3aed;font-weight:700'>" + m + "%</span></p>" +
+      "<p style='margin-top:.75rem;line-height:1.55'>" + job.jd + "</p>" +
+      "<p style='margin-top:.75rem;font-size:.85rem;color:#64748b'>Salary: " + job.salary + " · Experience: " + job.exp + " · Source: " + job.source + "</p>" +
+      '<div class="modal-actions">' +
+      '<button class="btn-primary btn-apply" data-job-id="' + job.id + '">Apply now</button>' +
+      '<button class="btn-outline btn-cv-match" data-job-id="' + job.id + '">CV Match</button>' +
+      '<button class="btn-ghost" id="btnCloseModal2">Close</button></div>'
+    );
+  }
+
+  function showCvMatch(jobId) {
+    var job = CURATED_JOBS.find(function (j) { return j.id === Number(jobId); });
+    if (!job) return;
+    var m = job._liveMatch || scoreAgainstProfile(job);
+    var missing = missingSkillsFor(job);
+    var skillsM = Math.min(96, m - 4);
+    var expM = Math.min(98, m + 2);
+    var leadM = Math.min(97, m + 3);
+    var indM = Math.max(70, m - 10);
+    var kwM = Math.min(94, m - 2);
+    openModal(
+      "<h2>CV Match — " + job.title + "</h2>" +
+      "<p style='color:#64748b'>" + job.company + "</p>" +
+      '<div class="match-score-wrap" style="margin:1rem 0;justify-content:center">' +
+      '<div class="score-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring-fill" style="stroke-dashoffset: calc(327 - (327 * ' + m + " / 100))\"/></svg>" +
+      '<div class="score-text"><span class="score-num">' + m + '%</span><span class="score-label">Match</span></div></div></div>' +
+      "<p style='font-size:.85rem;margin-bottom:.5rem'><strong>Breakdown vs your profile</strong></p>" +
+      "<ul style='font-size:.85rem;line-height:1.7;padding-left:1.1rem'>" +
+      "<li>Skills Match: <strong>" + skillsM + "%</strong></li>" +
+      "<li>Experience Match: <strong>" + expM + "%</strong></li>" +
+      "<li>Leadership Match: <strong>" + leadM + "%</strong></li>" +
+      "<li>Industry Match: <strong>" + indM + "%</strong></li>" +
+      "<li>Keywords Match: <strong>" + kwM + "%</strong></li></ul>" +
+      "<p style='margin-top:.75rem;font-size:.85rem'><strong>Top missing skills</strong></p>" +
+      '<div class="skill-tags" style="margin-top:.35rem">' + missing.map(function (s) { return '<span class="skill-tag">' + s + "</span>"; }).join("") + "</div>" +
+      '<div class="modal-actions">' +
+      '<button class="btn-primary btn-optimize-for" data-job-id="' + job.id + '">Optimize CV for this role</button>' +
+      '<button class="btn-outline btn-apply" data-job-id="' + job.id + '">Apply</button></div>'
+    );
+  }
+
+  function optimizeCv(jobId) {
+    var job = jobId ? CURATED_JOBS.find(function (j) { return j.id === Number(jobId); }) : null;
+    var missing = job ? missingSkillsFor(job) : PROFILE.missingForTarget;
+    var areas = [
+      "Add measurable impact metrics (e.g. time-to-fill, quality-of-hire, cost-per-hire) to recent roles.",
+      "Highlight AI-enabled TA systems and talent intelligence tools you have implemented.",
+      "Surface global leadership pipeline / succession outcomes with numbers.",
+      "Include keywords: " + missing.slice(0, 3).join(", ") + ".",
+      "Align summary to VP/Director TA language used in the target JD."
+    ];
+    openModal(
+      "<h2>Optimize CV" + (job ? " — " + job.title : "") + "</h2>" +
+      "<p style='color:#64748b;margin-bottom:.75rem'>Recommended focus areas based on your profile and " + (job ? "this role" : "target roles") + ":</p>" +
+      '<ol class="opt-list">' + areas.map(function (a) { return "<li>" + a + "</li>"; }).join("") + "</ol>" +
+      "<p style='font-size:.85rem;color:#64748b'>These suggestions map to the highest-weight gaps in ATS scoring for TA leadership roles.</p>" +
+      '<div class="modal-actions"><button class="btn-primary" id="btnCloseModal2">Got it</button>' +
+      '<button class="btn-outline" data-section="mycv">Open My CV</button></div>'
+    );
+  }
+
+  function applyJob(jobId) {
+    var job = CURATED_JOBS.find(function (j) { return j.id === Number(jobId); });
+    closeModal();
+    PIPELINE.applied += 1;
+    PIPELINE.saved = Math.max(0, PIPELINE.saved - 1);
+    renderPipeline();
+    toast("Applied to " + (job ? job.title + " @ " + job.company : "role") + " — profile auto-filled");
+    NOTIFICATIONS.unshift({
+      id: Date.now(),
+      text: "Application submitted: " + (job ? job.title + " at " + job.company : "role"),
+      time: "Just now",
+      unread: true
+    });
+    renderNotifs();
+  }
+
+  // ---------- AI Chat ----------
+  function openChat() {
+    var p = $("#chatPanel");
+    if (p) p.classList.add("open");
+    var inp = $("#chatInput");
+    if (inp) setTimeout(function () { inp.focus(); }, 200);
+  }
+  function closeChat() {
+    var p = $("#chatPanel");
+    if (p) p.classList.remove("open");
+  }
+  function addChatMsg(text, who) {
+    var box = $("#chatMessages");
+    if (!box) return;
+    var div = document.createElement("div");
+    div.className = "chat-msg " + (who || "bot");
+    div.textContent = text;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+  function botReply(query) {
+    var q = (query || "").toLowerCase();
+    var reply = "I can help with job search, Boolean/X-ray, CV match, pipeline, sources, and analytics. Try asking about high-match roles or how to improve your CV.";
+    if (/job|role|opening|vp|director|head of ta/.test(q)) {
+      reply = "You currently have " + CURATED_JOBS.length + " AI-curated TA leadership roles. Top match: " + CURATED_JOBS[0].title + " at " + CURATED_JOBS[0].company + " (" + (CURATED_JOBS[0]._liveMatch || CURATED_JOBS[0].match) + "%). Use AI Job Search or open Curated Jobs for more.";
+    } else if (/boolean|x-?ray|search string/.test(q)) {
+      reply = "Go to AI Job Search → Generate Boolean / X-ray. I build strings for VP/Director/Head of TA across LinkedIn, Indeed, Glassdoor, Naukri and more, with a past-week bias.";
+    } else if (/cv|resume|match|ats/.test(q)) {
+      reply = "Your overall profile match is around 87%. Top missing skills vs target roles: " + PROFILE.missingForTarget.slice(0, 3).join(", ") + ". Click CV Match on any job or Optimize CV for role-specific tips.";
+    } else if (/pipeline|application|interview|offer/.test(q)) {
+      reply = "Pipeline snapshot — Saved " + PIPELINE.saved + " → Applied " + PIPELINE.applied + " → Screening " + PIPELINE.screening + " → Interview " + PIPELINE.interview + " → Offer " + PIPELINE.offer + ". Open Applications for the full table.";
+    } else if (/source|linkedin|indeed|agency|board/.test(q)) {
+      reply = "Top channels by relevant volume: LinkedIn (" + SOURCES_PERF[0].count + "), Company Sites (" + SOURCES_PERF[1].count + "), Indeed (" + SOURCES_PERF[2].count + "). Sources page lists 25+ portals including executive search firms.";
+    } else if (/notif|alert/.test(q)) {
+      reply = "You have notifications for new high-match roles, interview reminders, and application updates. Click the bell icon to review them.";
+    } else if (/hello|hi |hey|help/.test(q)) {
+      reply = "Hi. Ask me anything about your TA search — jobs, Boolean, CV optimization, pipeline status, or which sources are performing best.";
+    } else if (/login|password|account/.test(q)) {
+      reply = "You're signed in (session is local to this browser). Session is stored in this browser only.";
+    }
+    setTimeout(function () { addChatMsg(reply, "bot"); }, 450 + Math.random() * 400);
+  }
+  function sendChat() {
+    var inp = $("#chatInput");
+    if (!inp) return;
+    var text = inp.value.trim();
+    if (!text) return;
+    addChatMsg(text, "user");
+    inp.value = "";
+    botReply(text);
+  }
+
+  // ---------- Realtime KPIs ----------
+  var metrics = { jobs: 2846, jobsToday: 214, curated: 327, curatedToday: 38, highMatch: 86, apps: 24, interviews: 12, offers: 3 };
+  var realtimeTimer = null;
+
+  function fmt(n) { return Number(n).toLocaleString("en-US"); }
+  function setKpi(id, value) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = typeof value === "number" ? fmt(value) : value;
+    el.classList.remove("updating");
+    void el.offsetWidth;
+    el.classList.add("updating");
+  }
+  function updateLastUpdated() {
+    var el = document.getElementById("lastUpdated");
+    if (!el) return;
+    var now = new Date();
+    el.textContent = "Updated " + now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  }
+  function tickRealtime() {
+    if (Math.random() < 0.5) {
+      var a = Math.floor(Math.random() * 3) + 1;
+      metrics.jobs += a; metrics.jobsToday += a;
+      setKpi("kpiJobs", metrics.jobs);
+      setKpi("kpiJobsTrend", "↑ " + metrics.jobsToday + " today");
+    }
+    if (Math.random() < 0.35) {
+      var b = Math.floor(Math.random() * 2) + 1;
+      metrics.curated += b; metrics.curatedToday += b;
+      setKpi("kpiCurated", metrics.curated);
+      setKpi("kpiCuratedTrend", "↑ " + metrics.curatedToday + " today");
+      var ct = document.getElementById("curatedCountText");
+      if (ct) ct.textContent = "Showing " + fmt(metrics.curated) + " jobs curated by AI";
+    }
+    if (Math.random() < 0.2) { metrics.highMatch += 1; setKpi("kpiHighMatch", metrics.highMatch); }
+    if (Math.random() < 0.1) { metrics.apps += 1; setKpi("kpiApps", metrics.apps); PIPELINE.applied = metrics.apps; renderPipeline(); }
+    if (Math.random() < 0.06) { metrics.interviews += 1; setKpi("kpiInterviews", metrics.interviews); PIPELINE.interview = metrics.interviews; renderPipeline(); }
+    updateLastUpdated();
+
+    // occasional new notification
+    if (Math.random() < 0.15) {
+      var job = CURATED_JOBS[Math.floor(Math.random() * CURATED_JOBS.length)];
+      NOTIFICATIONS.unshift({
+        id: Date.now(),
+        text: "New match: " + job.title + " at " + job.company + " (" + (job._liveMatch || job.match) + "%)",
+        time: "Just now",
+        unread: true
+      });
+      renderNotifs();
+    }
+    // realtime job alerts
+    if (JOB_ALERTS.length && Math.random() < 0.25) {
+      var al = JOB_ALERTS[Math.floor(Math.random() * JOB_ALERTS.length)];
+      al.hits = (al.hits || 0) + 1;
+      al.last = "Just now";
+      saveAlerts();
+      if ($("#section-alerts") && $("#section-alerts").classList.contains("active")) renderAlerts();
+      var lbl = $("#alertLiveLabel");
+      if (lbl) lbl.textContent = "Live · " + new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      NOTIFICATIONS.unshift({
+        id: Date.now() + 1,
+        text: "Alert match: " + al.title + " (" + al.location + ")",
+        time: "Just now",
+        unread: true
+      });
+      renderNotifs();
+    }
+  }
+  function startRealtime() {
+    updateLastUpdated();
+    if (realtimeTimer) clearInterval(realtimeTimer);
+    realtimeTimer = setInterval(tickRealtime, 10000);
+    setInterval(updateLastUpdated, 30000);
+  }
+
+  function generateBoolean(query) {
+    var base = '("Head of Talent Acquisition" OR "Director Talent Acquisition" OR "VP Talent Acquisition" OR "Global Head of TA")';
+    var loc = '(Europe OR "Middle East" OR Singapore OR UAE OR Dubai OR London OR Remote OR Hybrid)';
+    if (/india|bangalore|mumbai/i.test(query || "")) loc = "(India OR Bangalore OR Bengaluru OR Hyderabad OR Pune OR Gurgaon OR Mumbai)";
+    return base + " " + loc + ' ("full time" OR permanent) (job OR hiring) (site:linkedin.com/jobs OR site:indeed.com OR site:glassdoor.com)';
+  }
+
+  // ---------- Central click handler ----------
+  function onClick(e) {
+    var el = e.target.closest("a, button, .chip, .source-chip, .nav-item, [data-section], .icon-btn, .notif-item, .user-menu");
+    if (!el) {
+      // close panels on outside click
+      var np = $("#notifPanel");
+      if (np && np.classList.contains("open") && !e.target.closest("#notifPanel") && !e.target.closest("#btnNotifications")) {
+        np.classList.remove("open");
+      }
+      return;
+    }
+
+    var section = el.getAttribute("data-section");
+    if (section) { e.preventDefault(); showSection(section); return; }
+    if (el.classList.contains("nav-item")) {
+      e.preventDefault();
+      section = el.getAttribute("data-section");
+      if (section) showSection(section);
+      return;
+    }
+
+    if (el.id === "btnLogin") { e.preventDefault(); tryLogin(); return; }
+    if (el.id === "btnMobileMenu") {
+      e.preventDefault();
+      if ($("#sidebar") && $("#sidebar").classList.contains("open")) closeSidebar();
+      else openSidebar();
+      return;
+    }
+    if (el.id === "sidebarOverlay") { closeSidebar(); return; }
+
+    if (el.id === "btnNotifications") { e.preventDefault(); toggleNotifPanel(); return; }
+    if (el.classList.contains("notif-item")) {
+      el.classList.remove("unread");
+      toast("Notification opened");
+      return;
+    }
+
+    if (el.id === "btnAIAssistant" || el.id === "btnAskAI") { e.preventDefault(); openChat(); return; }
+    if (el.id === "btnCloseChat") { e.preventDefault(); closeChat(); return; }
+    if (el.id === "btnChatSend") { e.preventDefault(); sendChat(); return; }
+
+    if (el.id === "btnCloseModal" || el.id === "btnCloseModal2") { e.preventDefault(); closeModal(); return; }
+    if (el.id === "modalOverlay") { closeModal(); return; }
+
+    if (el.id === "btnSearchAI") {
+      e.preventDefault();
+      var q = ($("#aiQuery") && $("#aiQuery").value.trim()) || "";
+      if (!q) { toast("Please enter a search query"); return; }
+      toast("AI searching 50,000+ sources…");
+      setTimeout(function () {
+        toast("Found " + fmt(metrics.curated) + " high-relevance TA leadership roles");
+        // bump curated slightly
+        metrics.curated += 2; metrics.curatedToday += 2;
+        setKpi("kpiCurated", metrics.curated);
+        setKpi("kpiCuratedTrend", "↑ " + metrics.curatedToday + " today");
+      }, 1100);
+      return;
+    }
+    if (el.id === "btnSearchAIFull") {
+      e.preventDefault();
+      var qf = ($("#aiQueryFull") && $("#aiQueryFull").value.trim()) || "";
+      if (!qf) { toast("Please describe the roles you want"); return; }
+      toast("Running AI search across global sources…");
+      return;
+    }
+    if (el.id === "btnGenerateBoolean") {
+      e.preventDefault();
+      var qg = ($("#aiQueryFull") && $("#aiQueryFull").value.trim()) || "VP Director Talent Acquisition";
+      var bool = generateBoolean(qg);
+      if ($("#booleanText")) $("#booleanText").value = bool;
+      if ($("#booleanOutput")) $("#booleanOutput").style.display = "block";
+      toast("Boolean / X-ray generated");
+      return;
+    }
+    if (el.id === "btnOpenGoogle" || el.id === "btnRunXray") {
+      e.preventDefault();
+      var bx = (el.id === "btnRunXray" && $("#booleanText") && $("#booleanText").value) || generateBoolean(($("#aiQueryFull") && $("#aiQueryFull").value) || "");
+      window.open("https://www.google.com/search?q=" + encodeURIComponent(bx) + "&tbs=qdr:w", "_blank");
+      return;
+    }
+
+    if (el.id === "btnOptimizeCV" || el.classList.contains("btn-optimize-for")) {
+      e.preventDefault();
+      optimizeCv(el.getAttribute("data-job-id"));
+      return;
+    }
+    if (el.id === "btnAnalyzeJD") {
+      e.preventDefault();
+      var jd = ($("#jdInput") && $("#jdInput").value.trim()) || "";
+      if (!jd) { toast("Paste a Job Description first"); return; }
+      var fakeJob = { title: "Pasted JD", tags: ["Talent Acquisition"], match: 87 };
+      var m = scoreAgainstProfile(fakeJob);
+      var result = $("#matchResult");
+      if (result) {
+        result.style.display = "block";
+        result.innerHTML = '<div class="match-score-wrap" style="justify-content:center;margin:1rem 0"><div class="score-ring"><svg viewBox="0 0 120 120"><circle cx="60" cy="60" r="52" class="ring-bg"/><circle cx="60" cy="60" r="52" class="ring-fill" style="stroke-dashoffset: calc(327 - (327 * ' + m + ' / 100))"/></svg><div class="score-text"><span class="score-num">' + m + '%</span><span class="score-label">Great Match</span></div></div></div><p style="text-align:center;color:var(--text-muted)">Aligned with your global TA leadership profile.</p>';
+      }
+      toast("Match analysis complete — " + m + "%");
+      return;
+    }
+
+    if (el.classList.contains("btn-view-jd")) { e.preventDefault(); viewJD(el.getAttribute("data-job-id")); return; }
+    if (el.classList.contains("btn-cv-match")) { e.preventDefault(); showCvMatch(el.getAttribute("data-job-id")); return; }
+    if (el.classList.contains("btn-apply")) { e.preventDefault(); applyJob(el.getAttribute("data-job-id")); return; }
+    if (el.classList.contains("bookmark")) {
+      e.preventDefault();
+      PIPELINE.saved += 1;
+      renderPipeline();
+      toast("Job saved to pipeline");
+      return;
+    }
+
+    if (el.classList.contains("chip") && !el.classList.contains("more")) {
+      e.preventDefault();
+      var text = el.textContent.trim();
+      if ($("#aiQuery")) $("#aiQuery").value = "Find " + text + " roles globally, remote/hybrid, senior level, posted last 14 days";
+      if ($("#aiQueryFull")) $("#aiQueryFull").value = "Find " + text + " roles globally, remote/hybrid, senior level, posted last 14 days";
+      toast("Loaded: " + text);
+      return;
+    }
+    if (el.classList.contains("source-chip") || el.closest(".source-chip")) {
+      var chip = el.classList.contains("source-chip") ? el : el.closest(".source-chip");
+      chip.classList.toggle("active");
+      toast("Source filter: " + chip.textContent.trim().split("\n")[0]);
+      return;
+    }
+    if (el.classList.contains("btn-view-app")) {
+      e.preventDefault();
+      var co = el.getAttribute("data-company");
+      var app = APPLICATIONS.find(function (a) { return a.company === co; });
+      if (app) {
+        openModal(
+          "<h2>" + app.company + "</h2>" +
+          "<p style='color:#64748b'>" + app.role + "</p>" +
+          "<p style='margin-top:.75rem'><strong>Status:</strong> " + app.statusLabel + "</p>" +
+          "<p><strong>Stage:</strong> " + app.stage + "</p>" +
+          "<p><strong>Location:</strong> " + app.loc + "</p>" +
+          "<p><strong>Applied:</strong> " + app.applied + " · <strong>Updated:</strong> " + app.updated + "</p>" +
+          '<div class="modal-actions"><button class="btn-primary" id="btnCloseModal2">Close</button></div>'
+        );
+      }
+      return;
+    }
+    if (el.classList.contains("btn-open-source")) {
+      e.preventDefault();
+      toast("Opening " + (el.getAttribute("data-name") || "source") + "…");
+      return;
+    }
+    if (el.classList.contains("btn-xray-source")) {
+      e.preventDefault();
+      var nm = el.getAttribute("data-name") || "source";
+      window.open("https://www.google.com/search?q=" + encodeURIComponent(generateBoolean("") + " " + nm), "_blank");
+      return;
+    }
+    if (el.classList.contains("user-menu")) {
+      e.preventDefault();
+      if (confirm("Sign out of TA Job Search Hub?")) {
+        setLoggedIn(false);
+        showLogin();
+        toast("Signed out");
+      }
+      return;
+    }
+    if (el.classList.contains("link") && el.getAttribute("href") === "#") {
+      e.preventDefault();
+      var sec = el.getAttribute("data-section");
+      if (sec) showSection(sec);
+      else toast("Opening…");
+      return;
+    }
+
+    // Global search modal
+    if (el.id === "btnRunGlobalSearch") { e.preventDefault(); runGlobalSearch(); return; }
+    if (el.id === "btnCloseSearch") { e.preventDefault(); closeGlobalSearch(); return; }
+    if (el.id === "searchModal") { closeGlobalSearch(); return; }
+    if (el.id === "btnOpenGoogleSearch" || el.id === "btnOpenLinkedInSearch" || el.id === "btnOpenIndeedSearch" || el.id === "btnOpenNaukriSearch" || el.classList.contains("btn-open-result")) {
+      e.preventDefault();
+      var url = el.getAttribute("data-url");
+      if (url) window.open(url, "_blank");
+      return;
+    }
+
+    // Alerts
+    if (el.id === "btnCreateAlert") {
+      e.preventDefault();
+      var at = (($("#alertTitle") && $("#alertTitle").value) || "").trim();
+      var aloc = (($("#alertLocation") && $("#alertLocation").value) || "").trim() || "Global";
+      var asal = (($("#alertSalary") && $("#alertSalary").value) || "").trim() || "Any";
+      var am = ($("#alertMatch") && $("#alertMatch").value) || "80";
+      if (!at) { toast("Enter a job title for the alert"); return; }
+      JOB_ALERTS.unshift({ id: Date.now(), title: at, location: aloc, salary: asal, match: Number(am), hits: 0, last: "Just created" });
+      saveAlerts();
+      renderAlerts();
+      toast("Alert created — watching for matches");
+      return;
+    }
+    if (el.classList.contains("btn-del-alert")) {
+      e.preventDefault();
+      var did = Number(el.getAttribute("data-aid"));
+      JOB_ALERTS = JOB_ALERTS.filter(function (a) { return a.id !== did; });
+      saveAlerts();
+      renderAlerts();
+      toast("Alert deleted");
+      return;
+    }
+    if (el.classList.contains("btn-run-alert")) {
+      e.preventDefault();
+      var aid = Number(el.getAttribute("data-aid"));
+      var alr = JOB_ALERTS.find(function (a) { return a.id === aid; });
+      if (alr) {
+        openGlobalSearch(alr.title);
+        if ($("#gsLocation")) $("#gsLocation").value = alr.location;
+        runGlobalSearch();
+      }
+      return;
+    }
+
+    // Regional CV
+    if (el.classList.contains("btn-region-cv")) {
+      e.preventDefault();
+      showRegionCv(el.getAttribute("data-region"));
+      return;
+    }
+    if (el.classList.contains("btn-download-region")) {
+      e.preventDefault();
+      downloadRegionCv(el.getAttribute("data-region"));
+      return;
+    }
+
+    // Profile / settings
+    if (el.id === "btnEditProfile") { e.preventDefault(); showSection("settings"); toast("Update profile in Settings"); return; }
+    if (el.id === "btnSaveProfile") {
+      e.preventDefault();
+      PROFILE.name = ($("#setName") && $("#setName").value.trim()) || PROFILE.name;
+      PROFILE.title = ($("#setTitle") && $("#setTitle").value.trim()) || PROFILE.title;
+      PROFILE.email = ($("#setEmail") && $("#setEmail").value.trim()) || PROFILE.email;
+      PROFILE.location = ($("#setLocation") && $("#setLocation").value.trim()) || PROFILE.location;
+      PROFILE.linkedin = ($("#setLinkedIn") && $("#setLinkedIn").value.trim()) || PROFILE.linkedin;
+      saveProfile();
+      syncProfileUI();
+      toast("Profile saved");
+      return;
+    }
+    if (el.id === "btnChangePass") {
+      e.preventDefault();
+      var cur = ($("#setCurrentPass") && $("#setCurrentPass").value) || "";
+      var np = ($("#setNewPass") && $("#setNewPass").value) || "";
+      var cp = ($("#setConfirmPass") && $("#setConfirmPass").value) || "";
+      if (cur !== AUTH_PASS) { toast("Current password is incorrect"); return; }
+      if (np.length < 6) { toast("New password must be at least 6 characters"); return; }
+      if (np !== cp) { toast("New passwords do not match"); return; }
+      AUTH_PASS = np;
+      try { localStorage.setItem(PASS_KEY, np); } catch (err) {}
+      if ($("#setCurrentPass")) $("#setCurrentPass").value = "";
+      if ($("#setNewPass")) $("#setNewPass").value = "";
+      if ($("#setConfirmPass")) $("#setConfirmPass").value = "";
+      toast("Password updated");
+      return;
+    }
+    if (el.id === "btnSaveRecovery") {
+      e.preventDefault();
+      var re = ($("#setRecoveryEmail") && $("#setRecoveryEmail").value.trim()) || "";
+      if (!re || re.indexOf("@") < 0) { toast("Enter a valid recovery email"); return; }
+      PROFILE.recoveryEmail = re;
+      saveProfile();
+      toast("Recovery email saved");
+      return;
+    }
+    if (el.id === "btnTestRecovery") {
+      e.preventDefault();
+      var rem = PROFILE.recoveryEmail || PROFILE.email;
+      toast("Recovery link would be sent to " + rem + " (demo)");
+      return;
+    }
+    if (el.id === "btnSavePrefs") {
+      e.preventDefault();
+      toast("Preferences saved");
+      return;
+    }
+    if (el.id === "btnCoverLetter") {
+      e.preventDefault();
+      openModal("<h2>Cover letter</h2><p class='muted'>Draft based on your profile for TA leadership roles.</p><textarea rows='8' style='width:100%;margin-top:.75rem;padding:.75rem;border:1px solid #e2e8f0;border-radius:8px;font-family:inherit'>Dear Hiring Manager,\n\nI am writing to express interest in the Talent Acquisition leadership opportunity. With 20+ years of global TA experience across Europe, Americas, Middle East, Africa and APAC — most recently as Global TA Leader — I specialise in building scalable, AI-enabled hiring systems and leadership pipelines.\n\nI would welcome a conversation about how I can support your talent agenda.\n\nSincerely,\n" + PROFILE.name + "</textarea><div class='modal-actions'><button class='btn-primary' id='btnCloseModal2'>Close</button></div>");
+      return;
+    }
+  }
+
+  function init() {
+    document.addEventListener("click", onClick);
+
+    var chatInput = $("#chatInput");
+    if (chatInput) {
+      chatInput.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); sendChat(); }
+      });
+    }
+    var loginPass = $("#loginPass");
+    if (loginPass) {
+      loginPass.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") tryLogin();
+      });
+    }
+    var loginUser = $("#loginUser");
+    if (loginUser) {
+      loginUser.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { var p = $("#loginPass"); if (p) p.focus(); }
+      });
+    }
+
+    document.addEventListener("keydown", function (e) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        openGlobalSearch(($("#globalSearch") && $("#globalSearch").value) || "");
+      }
+      if (e.key === "Escape") {
+        closeChat();
+        closeModal();
+        closeGlobalSearch();
+        var np = $("#notifPanel");
+        if (np) np.classList.remove("open");
+      }
+    });
+
+    var gs = $("#globalSearch");
+    if (gs) {
+      gs.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          openGlobalSearch(gs.value);
+          if (gs.value.trim()) {
+            if ($("#gsQuery")) $("#gsQuery").value = gs.value.trim();
+            runGlobalSearch();
+          }
+        }
+      });
+      gs.addEventListener("click", function () {
+        openGlobalSearch(gs.value || "");
+      });
+    }
+    var searchBar = $(".search-bar");
+    if (searchBar) {
+      searchBar.addEventListener("click", function (e) {
+        if (e.target.closest("input") || e.target.closest("kbd")) return;
+        openGlobalSearch((gs && gs.value) || "");
+      });
+    }
+    var gsQ = $("#gsQuery");
+    if (gsQ) {
+      gsQ.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); runGlobalSearch(); }
+      });
+    }
+
+    function wireFile(id, handler) {
+      var inp = document.getElementById(id);
+      if (!inp) return;
+      inp.addEventListener("change", function () {
+        if (inp.files && inp.files[0]) handler(inp.files[0]);
+      });
+    }
+    wireFile("photoUpload", handlePhotoFile);
+    wireFile("setPhotoUpload", handlePhotoFile);
+    wireFile("resumeUpload", handleResumeFile);
+    wireFile("setResumeUpload", handleResumeFile);
+
+    var sf = $("#sourceFilter");
+    if (sf) sf.addEventListener("input", function (e) {
+      renderSourcesDir(e.target.value, ($("#regionFilter") && $("#regionFilter").value) || "");
+    });
+    var rf = $("#regionFilter");
+    if (rf) rf.addEventListener("change", function (e) {
+      renderSourcesDir(($("#sourceFilter") && $("#sourceFilter").value) || "", e.target.value);
+    });
+
+    renderCuratedJobs();
+    renderApplications();
+    renderInterviews();
+    renderOffers();
+    renderAlerts();
+    renderNotifs();
+    renderSourceBars();
+    renderPipeline();
+    renderSourcesDir();
+    wireAnalyticsDropdown();
+    applyAnalyticsPeriod("monthly");
+    updateAnalyticsKpis("monthly");
+    syncProfileUI();
+    fillSettingsForm();
+    // Charts need a short delay so canvas is in DOM / section may be hidden
+    setTimeout(function () { initCharts(); }, 100);
+
+    if (isLoggedIn()) {
+      hideLogin();
+      startRealtime();
+    } else {
+      showLogin();
+    }
+
+    console.log("%cTA Job Search Hub – interactive dashboard ready", "color:#7c3aed;font-weight:bold");
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,1257 @@
+import { useMemo, useState, type ReactNode } from "react";
+import {
+  LayoutGrid,
+  Search,
+  Briefcase,
+  ClipboardList,
+  Sparkles,
+  FileText,
+  LineChart,
+  GraduationCap,
+  Bookmark,
+  UserRound,
+  Shield,
+  Settings,
+  Play,
+  ArrowRight,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  Menu,
+  X,
+  Brain,
+  Zap,
+  LifeBuoy,
+  Linkedin,
+  Twitter,
+  Youtube,
+  Instagram,
+  ChevronRight,
+  LogOut,
+} from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { cn } from "@/lib/utils";
+import { JOBS, LEARNING, MARKET, ROLES, FUNCTIONS, INDUSTRIES, LOCATIONS, scoreMatch, type Job } from "@/lib/data";
+import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
+import { NetworkGlobe } from "@/components/NetworkGlobe";
+import { askGotcha } from "@/lib/ai";
+
+const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
+  { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
+  { id: "search", label: "AI Job Search", icon: Search },
+  { id: "opportunities", label: "Opportunities", icon: Briefcase },
+  { id: "applications", label: "Applications", icon: ClipboardList },
+  { id: "coach", label: "AI Career Coach", icon: Sparkles },
+  { id: "cv", label: "CV Intelligence", icon: FileText },
+  { id: "market", label: "Market Insights", icon: LineChart },
+  { id: "learn", label: "Learning Center", icon: GraduationCap },
+  { id: "saved", label: "Saved Searches", icon: Bookmark },
+  { id: "profile", label: "Profile", icon: UserRound },
+  { id: "admin", label: "Admin", icon: Shield, admin: true },
+];
+
+function Logo({ compact }: { compact?: boolean }) {
+  return (
+    <div className="flex flex-col">
+      <span className="font-display text-[1.35rem] font-semibold tracking-[0.18em] text-fg">
+        GOTCHA
+      </span>
+      {!compact && (
+        <span className="mt-0.5 text-[10px] font-medium tracking-[0.28em] text-muted uppercase">
+          The hunt ends here.
+        </span>
+      )}
+    </div>
+  );
+}
+
+function FieldSelect({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="flex min-w-0 flex-1 flex-col gap-1 border-r border-border px-3 py-2 last:border-r-0">
+      <span className="text-[10px] font-medium uppercase tracking-wider text-subtle">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full appearance-none bg-transparent text-sm font-medium text-fg outline-none"
+      >
+        {options.map((o) => (
+          <option key={o} value={o} className="bg-surface text-fg">
+            {o}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function MatchRing({ value, size = 56 }: { value: number; size?: number }) {
+  const r = 20;
+  const c = 2 * Math.PI * r;
+  const off = c - (value / 100) * c;
+  return (
+    <svg width={size} height={size} viewBox="0 0 48 48" className="shrink-0">
+      <circle cx="24" cy="24" r={r} fill="none" stroke="currentColor" className="text-border-strong" strokeWidth="5" />
+      <circle
+        cx="24"
+        cy="24"
+        r={r}
+        fill="none"
+        stroke="url(#mr)"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeDasharray={c}
+        strokeDashoffset={off}
+        transform="rotate(-90 24 24)"
+      />
+      <defs>
+        <linearGradient id="mr" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#22c55e" />
+          <stop offset="100%" stopColor="#7c5cff" />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function JobRow({ job, onOpen }: { job: Job; onOpen: (j: Job) => void }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(job)}
+      className="flex w-full items-center gap-3 rounded-md px-1 py-2 text-left transition-colors duration-150 hover:bg-card-2"
+    >
+      <span
+        className="flex size-9 items-center justify-center rounded-sm text-xs font-semibold text-fg"
+        style={{ background: job.logoBg }}
+      >
+        {job.logo}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-medium text-fg">{job.title}</span>
+        <span className="block truncate text-xs text-muted">
+          {job.company} · {job.location} · {job.work}
+        </span>
+      </span>
+      <span className="text-sm font-semibold tabular text-success">{job.match}%</span>
+      <span className="hidden text-[10px] uppercase tracking-wide text-subtle sm:inline">Match</span>
+    </button>
+  );
+}
+
+export function App() {
+  const view = useGotcha((s) => s.view);
+  const setView = useGotcha((s) => s.setView);
+  const user = useSessionUser();
+  const [mobileNav, setMobileNav] = useState(false);
+  const [job, setJob] = useState<Job | null>(null);
+
+  return (
+    <div className="gotecha-grid min-h-dvh bg-bg text-fg">
+      <div className="mx-auto flex min-h-dvh max-w-[1600px]">
+        <aside
+          className={cn(
+            "fixed inset-y-0 left-0 z-40 flex w-[232px] flex-col border-r border-border bg-sidebar px-4 py-5 transition-transform duration-250 md:static md:translate-x-0",
+            mobileNav ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          )}
+        >
+          <div className="mb-6 flex items-start justify-between px-2">
+            <Logo />
+            <button type="button" className="md:hidden" onClick={() => setMobileNav(false)} aria-label="Close menu">
+              <X className="size-5 text-muted" />
+            </button>
+          </div>
+          <nav className="flex flex-1 flex-col gap-0.5">
+            {NAV.filter((n) => !n.admin || user?.isAdmin).map((n) => {
+              const Icon = n.icon;
+              const active = view === n.id;
+              return (
+                <button
+                  key={n.id}
+                  type="button"
+                  onClick={() => {
+                    setView(n.id);
+                    setMobileNav(false);
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors duration-150",
+                    active
+                      ? "bg-primary/20 text-fg shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-primary)_45%,transparent)]"
+                      : "text-muted hover:bg-card hover:text-fg",
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  {n.label}
+                </button>
+              );
+            })}
+          </nav>
+          <div className="mt-4 rounded-lg bg-linear-to-br from-primary/30 to-primary/5 p-4 hairline">
+            <div className="mb-2 flex size-8 items-center justify-center rounded-md bg-primary/30">
+              <Sparkles className="size-4 text-primary-3" />
+            </div>
+            <p className="text-sm font-semibold">AI-Powered</p>
+            <p className="mt-1 text-xs leading-relaxed text-muted">
+              Real-time intelligence that finds the right opportunities for you.
+            </p>
+            <button
+              type="button"
+              onClick={() => setView("search")}
+              className="mt-3 text-xs font-medium text-primary-3"
+            >
+              Learn More →
+            </button>
+          </div>
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="flex items-center justify-between gap-3 px-4 py-3 md:px-6">
+            <button
+              type="button"
+              className="rounded-md p-2 md:hidden"
+              onClick={() => setMobileNav(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="size-5" />
+            </button>
+            <div className="hidden md:block" />
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => useGotcha.getState().setAdminPrompt(true)}
+                className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted hover:text-fg"
+              >
+                <Shield className="size-3.5" />
+                Administrator Access
+              </button>
+              <button
+                type="button"
+                className="rounded-full border border-border p-2 text-muted hover:text-fg"
+                aria-label="Settings"
+                onClick={() => setView("profile")}
+              >
+                <Settings className="size-4" />
+              </button>
+            </div>
+          </header>
+
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 px-4 pb-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-6">
+            <main className="min-w-0">
+              {view === "dashboard" && <Dashboard onOpenJob={setJob} />}
+              {view === "search" && <SearchPage onOpenJob={setJob} />}
+              {view === "opportunities" && <OpportunitiesPage onOpenJob={setJob} />}
+              {view === "applications" && <ApplicationsPage onOpenJob={setJob} />}
+              {view === "coach" && <CoachPage />}
+              {view === "cv" && <CvPage />}
+              {view === "market" && <MarketPage />}
+              {view === "learn" && <LearnPage />}
+              {view === "saved" && <SavedPage />}
+              {view === "profile" && <ProfilePage />}
+              {view === "admin" && <AdminPage />}
+            </main>
+            <RightRail />
+          </div>
+
+          <footer className="mt-auto border-t border-border px-4 py-6 md:px-6">
+            <p className="mb-4 text-center text-sm font-medium text-muted">Why Professionals Choose Gotcha</p>
+            <div className="mb-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+              {[
+                { icon: Zap, t: "AI-Powered Matching", d: "Smart algorithms find your perfect opportunities" },
+                { icon: Briefcase, t: "Real-time Opportunities", d: "Live job data from top companies worldwide" },
+                { icon: Brain, t: "Career Intelligence", d: "Market insights to make smarter career moves" },
+                { icon: LifeBuoy, t: "End-to-End Support", d: "AI Coach, CV Intelligence & Application Tracking" },
+              ].map((x) => (
+                <div key={x.t} className="flex gap-3">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-card">
+                    <x.icon className="size-4 text-muted" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-medium">{x.t}</p>
+                    <p className="text-xs text-muted">{x.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-subtle">
+              <p>© 2026 Gotcha. All rights reserved.</p>
+              <div className="flex gap-4">
+                <a href="/privacy" className="hover:text-fg">Privacy Policy</a>
+                <a href="/terms" className="hover:text-fg">Terms of Service</a>
+                <a href="mailto:hello@gotecha.app" className="hover:text-fg">Support</a>
+              </div>
+              <div className="flex gap-3 text-muted">
+                <Linkedin className="size-4" />
+                <Twitter className="size-4" />
+                <Youtube className="size-4" />
+                <Instagram className="size-4" />
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      {mobileNav && (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-bg/60 md:hidden"
+          aria-label="Close overlay"
+          onClick={() => setMobileNav(false)}
+        />
+      )}
+      {job && <JobModal job={job} onClose={() => setJob(null)} />}
+      <DemoModal />
+      <AdminGate />
+    </div>
+  );
+}
+
+function Dashboard({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
+  const filters = useGotcha((s) => s.filters);
+  const setFilters = useGotcha((s) => s.setFilters);
+  const setView = useGotcha((s) => s.setView);
+  const applications = useGotcha((s) => s.applications);
+  const user = useSessionUser();
+  const top = JOBS.slice(0, 3);
+  const counts = {
+    applied: applications.filter((a) => a.status === "applied").length,
+    interview: applications.filter((a) => a.status === "interview").length,
+    assessment: applications.filter((a) => a.status === "assessment").length,
+    offer: applications.filter((a) => a.status === "offer").length,
+    rejected: applications.filter((a) => a.status === "rejected").length,
+  };
+  const pie = [
+    { name: "Applied", value: counts.applied, color: "#38bdf8" },
+    { name: "Interview", value: counts.interview, color: "#7c5cff" },
+    { name: "Assessment", value: counts.assessment, color: "#f59e0b" },
+    { name: "Offer", value: counts.offer, color: "#22c55e" },
+    { name: "Rejected", value: counts.rejected, color: "#ef4444" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <section className="relative overflow-hidden rounded-xl border border-border bg-card px-5 py-6 md:px-8 md:py-8">
+        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] md:block">
+          <NetworkGlobe />
+        </div>
+        <div className="relative max-w-[34rem]">
+          <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
+            THE HUNT
+            <br />
+            <span className="bg-linear-to-r from-primary-3 to-primary bg-clip-text text-transparent">ENDS HERE.</span>
+          </h1>
+          <p className="mt-4 max-w-md text-sm text-muted md:text-base">
+            Your next opportunity isn’t something you chase.
+            <br />
+            <span className="font-semibold text-primary-3">Gotcha</span> finds where you fit.
+          </p>
+        </div>
+        <div className="relative mt-6 flex flex-col gap-0 overflow-hidden rounded-lg border border-border bg-bg/70 md:flex-row md:items-stretch">
+          <FieldSelect label="Role / Job Title" value={filters.role} options={ROLES} onChange={(v) => setFilters({ role: v })} />
+          <FieldSelect label="Function" value={filters.function} options={FUNCTIONS} onChange={(v) => setFilters({ function: v })} />
+          <FieldSelect label="Industry" value={filters.industry} options={INDUSTRIES} onChange={(v) => setFilters({ industry: v })} />
+          <FieldSelect label="Location" value={filters.location} options={LOCATIONS} onChange={(v) => setFilters({ location: v })} />
+          <button
+            type="button"
+            onClick={() => setView("search")}
+            className="m-2 flex items-center justify-center rounded-md bg-primary px-4 py-3 text-fg glow-primary"
+            aria-label="Search"
+          >
+            <Search className="size-5" />
+          </button>
+        </div>
+        <div className="relative mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
+          <span>Popular Searches:</span>
+          {["Data Analyst", "UX Designer", "DevOps Engineer", "Sales Manager", "Marketing Lead"].map((p) => (
+            <button
+              key={p}
+              type="button"
+              onClick={() => {
+                setFilters({ role: p });
+                setView("search");
+              }}
+              className="rounded-full border border-border px-2.5 py-1 hover:border-border-strong hover:text-fg"
+            >
+              {p}
+            </button>
+          ))}
+          <button type="button" onClick={() => setView("search")} className="rounded-full border border-border px-2.5 py-1">
+            More +
+          </button>
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="AI Match Score" value="94%" hint="Excellent Match" ring={<MatchRing value={94} />} />
+        <StatCard
+          label="Live Opportunities"
+          value="2,846"
+          hint="+12% this week"
+          icon={<Briefcase className="size-5 text-info" />}
+        />
+        <StatCard
+          label="Profile Fit"
+          value="87%"
+          hint="Strong Alignment"
+          icon={<UserRound className="size-5 text-success" />}
+        />
+        <StatCard
+          label="Market Signal"
+          value="Strong"
+          hint="High Demand"
+          icon={<LineChart className="size-5 text-success" />}
+        />
+      </section>
+
+      <section className="grid gap-3 lg:grid-cols-3">
+        <div className="rounded-xl border border-border bg-card p-4 lg:col-span-1">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Top Matching Opportunities</h2>
+            <button type="button" className="text-xs text-primary-3" onClick={() => setView("opportunities")}>
+              View all
+            </button>
+          </div>
+          <div className="space-y-1">
+            {top.map((j) => (
+              <JobRow key={j.id} job={j} onOpen={onOpenJob} />
+            ))}
+          </div>
+          <button type="button" className="mt-3 text-xs font-medium text-primary-3" onClick={() => setView("opportunities")}>
+            Explore More Opportunities →
+          </button>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-sm font-semibold">Application Pipeline</h2>
+            <button type="button" className="text-xs text-primary-3" onClick={() => setView("applications")}>
+              View all
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="relative h-[140px] w-[140px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie data={pie} dataKey="value" innerRadius={42} outerRadius={62} paddingAngle={2} stroke="none">
+                    {pie.map((e) => (
+                      <Cell key={e.name} fill={e.color} />
+                    ))}
+                  </Pie>
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-xl font-semibold tabular">{applications.length}</span>
+                <span className="text-[10px] text-muted">Total</span>
+              </div>
+            </div>
+            <ul className="space-y-1.5 text-xs">
+              {pie.map((p) => (
+                <li key={p.name} className="flex items-center gap-2">
+                  <span className="size-2 rounded-full" style={{ background: p.color }} />
+                  <span className="w-20 text-muted">{p.name}</span>
+                  <span className="tabular font-medium">{p.value}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-border bg-card p-4">
+          <h2 className="text-sm font-semibold">AI Career Insight</h2>
+          <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-warn/15 px-2 py-0.5 text-[10px] font-medium text-warn">
+            <Zap className="size-3" /> Recommended for you
+          </p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">
+            Your profile is in high demand for Product Management roles in FinTech companies.
+          </p>
+          <p className="mt-3 text-xs text-subtle">Top skills to boost your match:</p>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {(user?.skills.length ? user.skills : ["Product Strategy", "Analytics", "Stakeholder Mgmt"]).map((s) => (
+              <span key={s} className="rounded-full border border-border px-2 py-0.5 text-[11px] text-fg">
+                {s}
+              </span>
+            ))}
+          </div>
+          <button type="button" className="mt-4 text-xs font-medium text-primary-3" onClick={() => setView("coach")}>
+            See Full Insight →
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  hint,
+  ring,
+  icon,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  ring?: ReactNode;
+  icon?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+      <div>
+        <p className="text-[10px] font-medium uppercase tracking-wider text-subtle">{label}</p>
+        <p className="mt-1 text-2xl font-semibold tabular">{value}</p>
+        <p className="mt-1 text-xs text-success">{hint}</p>
+      </div>
+      {ring ?? <span className="flex size-11 items-center justify-center rounded-full bg-card-2">{icon}</span>}
+    </div>
+  );
+}
+
+function filterJobs(role: string, fn: string, industry: string, location: string) {
+  return JOBS.filter((j) => {
+    const roleOk = !role || j.title.toLowerCase().includes(role.toLowerCase().split(" ")[0] ?? "") || role === "Product Manager";
+    const fnOk = !fn || j.function === fn || fn === "Technology";
+    const indOk = !industry || j.industry === industry || true;
+    const locOk = !location || j.location.toLowerCase().includes(location.split("/")[0].trim().toLowerCase()) || location.includes("Remote") || location.includes("India");
+    return roleOk && fnOk && indOk && locOk;
+  }).sort((a, b) => b.match - a.match);
+}
+
+function SearchPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
+  const filters = useGotcha((s) => s.filters);
+  const setFilters = useGotcha((s) => s.setFilters);
+  const saveCurrentSearch = useGotcha((s) => s.saveCurrentSearch);
+  const [prompt, setPrompt] = useState("Find global Product Manager roles in FinTech, India or remote, last 7 days");
+  const [ai, setAi] = useState("");
+  const [busy, setBusy] = useState(false);
+  const jobs = useMemo(
+    () => filterJobs(filters.role, filters.function, filters.industry, filters.location),
+    [filters],
+  );
+
+  async function runAi() {
+    setBusy(true);
+    const res = await askGotcha({
+      data: {
+        prompt,
+        system:
+          "You are Gotcha AI Job Search. Return: 1) a Boolean/X-ray string 2) 4 suggested titles 3) a 3-line search strategy. Keep it tight.",
+      },
+    });
+    setBusy(false);
+    setAi(res.ok ? res.text : res.error);
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">AI Job Search</h1>
+      <p className="text-sm text-muted">Natural language search across 50,000+ global sources with Boolean + X-ray generation.</p>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          rows={3}
+          className="w-full resize-none rounded-md border border-border bg-input p-3 text-sm outline-none focus:border-primary"
+        />
+        <div className="mt-3 flex flex-wrap gap-2">
+          <button type="button" onClick={runAi} disabled={busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium glow-primary disabled:opacity-60">
+            {busy ? "Searching…" : "Search with AI"}
+          </button>
+          <button type="button" onClick={saveCurrentSearch} className="rounded-md border border-border px-4 py-2 text-sm">
+            Save search
+          </button>
+        </div>
+        {ai && <pre className="mt-3 whitespace-pre-wrap rounded-md bg-bg p-3 text-xs text-muted">{ai}</pre>}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <FieldSelect label="Role" value={filters.role} options={ROLES} onChange={(v) => setFilters({ role: v })} />
+        <FieldSelect label="Industry" value={filters.industry} options={INDUSTRIES} onChange={(v) => setFilters({ industry: v })} />
+      </div>
+      <div className="space-y-2">
+        {jobs.map((j) => (
+          <JobCard key={j.id} job={j} onOpen={onOpenJob} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function JobCard({ job, onOpen }: { job: Job; onOpen: (j: Job) => void }) {
+  const applyTo = useGotcha((s) => s.applyTo);
+  const toggleSaveJob = useGotcha((s) => s.toggleSaveJob);
+  const saved = useGotcha((s) => s.savedJobIds.includes(job.id));
+  const applied = useGotcha((s) => s.applications.some((a) => a.jobId === job.id));
+  return (
+    <article className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+      <span className="flex size-10 items-center justify-center rounded-sm text-sm font-semibold" style={{ background: job.logoBg }}>
+        {job.logo}
+      </span>
+      <div className="min-w-0 flex-1">
+        <h3 className="font-medium">{job.title}</h3>
+        <p className="text-xs text-muted">
+          {job.company} · {job.location} · {job.work} · {job.salary}
+        </p>
+        <div className="mt-1 flex flex-wrap gap-1">
+          {job.tags.map((t) => (
+            <span key={t} className="rounded-full bg-bg px-2 py-0.5 text-[10px] text-muted">
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+      <span className="text-sm font-semibold text-success">{job.match}% match</span>
+      <button type="button" onClick={() => onOpen(job)} className="rounded-md border border-border px-3 py-1.5 text-xs">
+        View
+      </button>
+      <button
+        type="button"
+        onClick={() => applyTo(job.id)}
+        disabled={applied}
+        className="rounded-md bg-primary px-3 py-1.5 text-xs font-medium disabled:opacity-50"
+      >
+        {applied ? "Applied" : "Apply"}
+      </button>
+      <button type="button" onClick={() => toggleSaveJob(job.id)} className="text-xs text-muted">
+        {saved ? "Saved" : "Save"}
+      </button>
+    </article>
+  );
+}
+
+function OpportunitiesPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
+  return (
+    <div className="space-y-3">
+      <h1 className="text-xl font-semibold">Opportunities</h1>
+      <p className="text-sm text-muted">{JOBS.length} AI-ranked roles matched to your profile.</p>
+      {JOBS.map((j) => (
+        <JobCard key={j.id} job={j} onOpen={onOpenJob} />
+      ))}
+    </div>
+  );
+}
+
+function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
+  const applications = useGotcha((s) => s.applications);
+  const setStatus = useGotcha((s) => s.setStatus);
+  return (
+    <div className="space-y-3">
+      <h1 className="text-xl font-semibold">Applications</h1>
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-card text-xs uppercase tracking-wide text-subtle">
+            <tr>
+              <th className="px-3 py-2">Company</th>
+              <th className="px-3 py-2">Role</th>
+              <th className="px-3 py-2">Status</th>
+              <th className="px-3 py-2">Applied</th>
+            </tr>
+          </thead>
+          <tbody>
+            {applications.map((a) => {
+              const job = JOBS.find((j) => j.id === a.jobId);
+              if (!job) return null;
+              return (
+                <tr key={a.id} className="border-t border-border">
+                  <td className="px-3 py-2">
+                    <button type="button" className="text-left hover:text-primary-3" onClick={() => onOpenJob(job)}>
+                      {job.company}
+                    </button>
+                  </td>
+                  <td className="px-3 py-2">{job.title}</td>
+                  <td className="px-3 py-2">
+                    <select
+                      value={a.status}
+                      onChange={(e) => setStatus(a.id, e.target.value as typeof a.status)}
+                      className="rounded-sm border border-border bg-input px-2 py-1 text-xs"
+                    >
+                      <option value="applied">Applied</option>
+                      <option value="interview">Interview</option>
+                      <option value="assessment">Assessment</option>
+                      <option value="offer">Offer</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </td>
+                  <td className="px-3 py-2 text-muted">{a.appliedAt}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function CoachPage() {
+  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([
+    { role: "bot", text: "I’m your Gotcha career coach. Ask about roles, Boolean search, CV gaps, or interview prep." },
+  ]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    const text = input.trim();
+    if (!text || busy) return;
+    setInput("");
+    setMessages((m) => [...m, { role: "user", text }]);
+    setBusy(true);
+    const res = await askGotcha({ data: { prompt: text } });
+    setBusy(false);
+    setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+  }
+
+  return (
+    <div className="flex h-[70vh] flex-col rounded-xl border border-border bg-card">
+      <div className="border-b border-border px-4 py-3 text-sm font-semibold">AI Career Coach</div>
+      <div className="flex-1 space-y-3 overflow-y-auto p-4">
+        {messages.map((m, i) => (
+          <div
+            key={i}
+            className={cn(
+              "max-w-[85%] rounded-lg px-3 py-2 text-sm",
+              m.role === "bot" ? "bg-bg text-muted" : "ml-auto bg-primary/25 text-fg",
+            )}
+          >
+            {m.text}
+          </div>
+        ))}
+      </div>
+      <form
+        className="flex gap-2 border-t border-border p-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void send();
+        }}
+      >
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Ask the coach…"
+          className="flex-1 rounded-md border border-border bg-input px-3 py-2 text-sm outline-none"
+        />
+        <button type="submit" disabled={busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium">
+          Send
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function CvPage() {
+  const cvText = useGotcha((s) => s.cvText);
+  const setCvText = useGotcha((s) => s.setCvText);
+  const user = useSessionUser();
+  const [jd, setJd] = useState("");
+  const [result, setResult] = useState("");
+  const [busy, setBusy] = useState(false);
+  const sample = JOBS[0];
+  const score = sample ? scoreMatch(sample, user?.skills ?? [], user?.title ?? "", "FinTech") : 87;
+
+  async function analyze() {
+    setBusy(true);
+    const res = await askGotcha({
+      data: {
+        prompt: `Score this CV against the JD. Give match %, 5 missing keywords, and 3 rewrite bullets.\n\nCV:\n${cvText || user?.about}\n\nJD:\n${jd || sample?.description}`,
+        system: "You are Gotcha CV Intelligence. Be specific and terse.",
+      },
+    });
+    setBusy(false);
+    setResult(res.ok ? res.text : res.error);
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">CV Intelligence</h1>
+      <div className="grid gap-3 md:grid-cols-2">
+        <textarea
+          value={cvText}
+          onChange={(e) => setCvText(e.target.value)}
+          placeholder="Paste your CV…"
+          rows={10}
+          className="rounded-xl border border-border bg-card p-3 text-sm outline-none"
+        />
+        <textarea
+          value={jd}
+          onChange={(e) => setJd(e.target.value)}
+          placeholder="Paste a job description…"
+          rows={10}
+          className="rounded-xl border border-border bg-card p-3 text-sm outline-none"
+        />
+      </div>
+      <button type="button" onClick={analyze} disabled={busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium">
+        {busy ? "Analyzing…" : "Analyze Match"}
+      </button>
+      <div className="rounded-xl border border-border bg-card p-4">
+        <p className="text-sm text-muted">Baseline ATS score vs top FinTech PM role</p>
+        <p className="text-3xl font-semibold tabular text-success">{score}%</p>
+        {result && <pre className="mt-3 whitespace-pre-wrap text-xs text-muted">{result}</pre>}
+      </div>
+    </div>
+  );
+}
+
+function MarketPage() {
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Market Insights</h1>
+      <div className="grid gap-3 md:grid-cols-2">
+        {MARKET.map((m) => (
+          <div key={m.label} className="rounded-xl border border-border bg-card p-4">
+            <div className="flex items-center justify-between">
+              <p className="font-medium">{m.label}</p>
+              <p className={m.change >= 0 ? "text-sm text-success" : "text-sm text-danger"}>
+                {m.change >= 0 ? "+" : ""}
+                {m.change}%
+              </p>
+            </div>
+            <div className="mt-3 h-2 overflow-hidden rounded-full bg-bg">
+              <div className="h-full rounded-full bg-primary" style={{ width: `${m.demand}%` }} />
+            </div>
+            <p className="mt-2 text-xs text-muted">Demand index {m.demand}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LearnPage() {
+  return (
+    <div className="space-y-3">
+      <h1 className="text-xl font-semibold">Learning Center</h1>
+      {LEARNING.map((l) => (
+        <article key={l.id} className="rounded-xl border border-border bg-card p-4">
+          <p className="text-[10px] uppercase tracking-wide text-primary-3">{l.tag}</p>
+          <h3 className="mt-1 font-medium">{l.title}</h3>
+          <p className="text-xs text-muted">
+            {l.source} · {l.minutes} min
+          </p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function SavedPage() {
+  const savedSearches = useGotcha((s) => s.savedSearches);
+  const removeSavedSearch = useGotcha((s) => s.removeSavedSearch);
+  const setFilters = useGotcha((s) => s.setFilters);
+  const setView = useGotcha((s) => s.setView);
+  const savedJobIds = useGotcha((s) => s.savedJobIds);
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Saved Searches</h1>
+      {savedSearches.length === 0 && <p className="text-sm text-muted">No saved searches yet.</p>}
+      {savedSearches.map((s) => (
+        <div key={s.id} className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
+          <div>
+            <p className="font-medium">{s.query}</p>
+            <p className="text-xs text-muted">{s.createdAt}</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="rounded-md border border-border px-3 py-1.5 text-xs"
+              onClick={() => {
+                setFilters({ role: s.role, function: s.function, industry: s.industry, location: s.location });
+                setView("search");
+              }}
+            >
+              Run
+            </button>
+            <button type="button" className="text-xs text-danger" onClick={() => removeSavedSearch(s.id)}>
+              Remove
+            </button>
+          </div>
+        </div>
+      ))}
+      <h2 className="pt-2 text-sm font-semibold">Saved jobs ({savedJobIds.length})</h2>
+    </div>
+  );
+}
+
+function ProfilePage() {
+  const user = useSessionUser();
+  const updateProfile = useGotcha((s) => s.updateProfile);
+  const logout = useGotcha((s) => s.logout);
+  const [form, setForm] = useState({
+    name: user?.name ?? "",
+    title: user?.title ?? "",
+    location: user?.location ?? "",
+    about: user?.about ?? "",
+    skills: (user?.skills ?? []).join(", "),
+  });
+  if (!user) {
+    return <p className="text-sm text-muted">Sign in on the right to manage your profile.</p>;
+  }
+  return (
+    <div className="max-w-xl space-y-3">
+      <h1 className="text-xl font-semibold">Profile</h1>
+      {(["name", "title", "location"] as const).map((k) => (
+        <label key={k} className="block text-xs text-muted">
+          {k}
+          <input
+            value={form[k]}
+            onChange={(e) => setForm({ ...form, [k]: e.target.value })}
+            className="mt-1 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-fg"
+          />
+        </label>
+      ))}
+      <label className="block text-xs text-muted">
+        about
+        <textarea
+          value={form.about}
+          onChange={(e) => setForm({ ...form, about: e.target.value })}
+          rows={4}
+          className="mt-1 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-fg"
+        />
+      </label>
+      <label className="block text-xs text-muted">
+        skills (comma separated)
+        <input
+          value={form.skills}
+          onChange={(e) => setForm({ ...form, skills: e.target.value })}
+          className="mt-1 w-full rounded-md border border-border bg-input px-3 py-2 text-sm text-fg"
+        />
+      </label>
+      <div className="flex gap-2">
+        <button
+          type="button"
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium"
+          onClick={() =>
+            updateProfile({
+              name: form.name,
+              title: form.title,
+              location: form.location,
+              about: form.about,
+              skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
+            })
+          }
+        >
+          Save profile
+        </button>
+        <button type="button" onClick={logout} className="inline-flex items-center gap-1 rounded-md border border-border px-4 py-2 text-sm">
+          <LogOut className="size-4" /> Sign out
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AdminPage() {
+  const user = useSessionUser();
+  const users = useGotcha((s) => s.users);
+  if (!user?.isAdmin) return <p className="text-sm text-muted">Administrator access required.</p>;
+  return (
+    <div className="space-y-3">
+      <h1 className="text-xl font-semibold">Administrator</h1>
+      <p className="text-sm text-muted">{users.length} registered profiles on this device.</p>
+      <ul className="space-y-2">
+        {users.map((u) => (
+          <li key={u.email} className="rounded-xl border border-border bg-card p-3 text-sm">
+            <p className="font-medium">{u.name}</p>
+            <p className="text-xs text-muted">
+              {u.email} · {u.title}
+              {u.isAdmin ? " · admin" : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function RightRail() {
+  const user = useSessionUser();
+  const setDemoOpen = useGotcha((s) => s.setDemoOpen);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [show, setShow] = useState(false);
+  const [err, setErr] = useState("");
+  const login = useGotcha((s) => s.login);
+  const register = useGotcha((s) => s.register);
+  const logout = useGotcha((s) => s.logout);
+
+  return (
+    <aside className="space-y-4">
+      <div className="rounded-xl border border-border bg-card p-4">
+        <h2 className="text-center text-lg font-semibold">
+          Experience <span className="text-primary-3">Gotcha</span>
+        </h2>
+        <p className="mt-1 text-center text-xs text-muted">before you get started</p>
+        <button
+          type="button"
+          onClick={() => setDemoOpen(true)}
+          className="mt-4 flex w-full items-center gap-3 rounded-lg bg-linear-to-r from-primary to-primary-2 px-3 py-3 text-left glow-primary"
+        >
+          <span className="flex size-9 items-center justify-center rounded-full bg-fg/15">
+            <Play className="size-4 fill-current" />
+          </span>
+          <span className="flex-1">
+            <span className="block text-xs font-semibold tracking-wide">RUN 90-SECOND DEMO</span>
+            <span className="block text-[11px] text-fg/80">See how Gotcha finds the right opportunities for you</span>
+          </span>
+          <ChevronRight className="size-4" />
+        </button>
+      </div>
+
+      <div className="flex items-center gap-3 px-2 text-[11px] uppercase tracking-[0.2em] text-subtle">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-4">
+        {user ? (
+          <div>
+            <p className="text-sm font-semibold">Welcome back</p>
+            <p className="mt-1 text-xs text-muted">{user.name}</p>
+            <p className="text-xs text-subtle">{user.email}</p>
+            <p className="mt-3 text-sm">{user.title}</p>
+            <button type="button" onClick={logout} className="mt-4 w-full rounded-md border border-border py-2 text-sm">
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const res =
+                mode === "signin"
+                  ? login(email, password)
+                  : register({
+                      name,
+                      email,
+                      password,
+                      title: "Product Manager",
+                      location: "India / Remote",
+                      about: "",
+                      skills: [],
+                    });
+              setErr(res.ok ? "" : res.error ?? "Failed");
+            }}
+            className="space-y-3"
+          >
+            <h3 className="text-lg font-semibold">{mode === "signin" ? "Welcome Back!" : "Create your profile"}</h3>
+            <p className="text-xs text-muted">{mode === "signin" ? "Sign in to continue" : "Takes less than a minute"}</p>
+            {mode === "signup" && (
+              <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
+                <UserRound className="size-4 text-muted" />
+                <input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Full name"
+                  className="w-full bg-transparent text-sm outline-none"
+                />
+              </label>
+            )}
+            <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
+              <Mail className="size-4 text-muted" />
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email Address"
+                className="w-full bg-transparent text-sm outline-none"
+                suppressHydrationWarning
+              />
+            </label>
+            <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
+              <Lock className="size-4 text-muted" />
+              <input
+                type={show ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full bg-transparent text-sm outline-none"
+                suppressHydrationWarning
+              />
+              <button type="button" onClick={() => setShow((s) => !s)} aria-label="Toggle password">
+                {show ? <EyeOff className="size-4 text-muted" /> : <Eye className="size-4 text-muted" />}
+              </button>
+            </label>
+            {mode === "signin" && (
+              <button type="button" className="text-xs text-primary-3">
+                Forgot Password?
+              </button>
+            )}
+            {err && <p className="text-xs text-danger">{err}</p>}
+            <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold glow-primary">
+              {mode === "signin" ? "SIGN IN" : "CREATE PROFILE"} <ArrowRight className="size-4" />
+            </button>
+            {mode === "signin" ? (
+              <div>
+                <p className="mb-2 text-xs text-muted">New to Gotcha?</p>
+                <button
+                  type="button"
+                  onClick={() => setMode("signup")}
+                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border py-3 text-sm font-medium"
+                >
+                  <UserRound className="size-4" /> CREATE YOUR PROFILE
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setMode("signin")} className="w-full text-xs text-primary-3">
+                Already have an account? Sign in
+              </button>
+            )}
+            <p className="flex items-center justify-center gap-1 text-[10px] text-subtle">
+              <Shield className="size-3" /> Your data is secure with enterprise-grade encryption
+            </p>
+            <p className="text-[10px] text-subtle">Demo: demo@gotecha.com / huntends</p>
+          </form>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
+  const applyTo = useGotcha((s) => s.applyTo);
+  const applied = useGotcha((s) => s.applications.some((a) => a.jobId === job.id));
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
+      <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{job.title}</h2>
+            <p className="text-sm text-muted">
+              {job.company} · {job.location} · {job.work}
+            </p>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close">
+            <X className="size-5" />
+          </button>
+        </div>
+        <p className="mt-3 text-sm leading-relaxed text-muted">{job.description}</p>
+        <p className="mt-3 text-sm">
+          {job.salary} · {job.posted} · {job.source}
+        </p>
+        <p className="mt-2 text-sm font-semibold text-success">{job.match}% match</p>
+        <button
+          type="button"
+          disabled={applied}
+          onClick={() => applyTo(job.id)}
+          className="mt-4 w-full rounded-md bg-primary py-2.5 text-sm font-medium disabled:opacity-50"
+        >
+          {applied ? "Already applied" : "Apply with profile"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DemoModal() {
+  const open = useGotcha((s) => s.demoOpen);
+  const setDemoOpen = useGotcha((s) => s.setDemoOpen);
+  const setView = useGotcha((s) => s.setView);
+  const [step, setStep] = useState(0);
+  const steps = [
+    { t: "Search like a human", d: "Describe the role in plain language. Gotcha turns it into Boolean, X-ray, and live matches." },
+    { t: "See where you fit", d: "Every role is scored against your profile — skills, seniority, industry, and location." },
+    { t: "Track the hunt", d: "Applications, interviews, and offers live in one pipeline so nothing slips." },
+  ];
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
+      <div className="w-full max-w-md rounded-xl border border-border bg-surface p-6">
+        <p className="text-[10px] uppercase tracking-[0.2em] text-primary-3">90-second demo</p>
+        <h2 className="mt-2 text-xl font-semibold">{steps[step].t}</h2>
+        <p className="mt-2 text-sm text-muted">{steps[step].d}</p>
+        <div className="mt-4 flex gap-1">
+          {steps.map((_, i) => (
+            <span key={i} className={cn("h-1 flex-1 rounded-full", i <= step ? "bg-primary" : "bg-border")} />
+          ))}
+        </div>
+        <div className="mt-5 flex justify-between">
+          <button type="button" className="text-sm text-muted" onClick={() => setDemoOpen(false)}>
+            Skip
+          </button>
+          <button
+            type="button"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium"
+            onClick={() => {
+              if (step < steps.length - 1) setStep(step + 1);
+              else {
+                setDemoOpen(false);
+                setView("search");
+                setStep(0);
+              }
+            }}
+          >
+            {step < steps.length - 1 ? "Next" : "Start hunting"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminGate() {
+  const open = useGotcha((s) => s.adminPrompt);
+  const setAdminPrompt = useGotcha((s) => s.setAdminPrompt);
+  const login = useGotcha((s) => s.login);
+  const setView = useGotcha((s) => s.setView);
+  const [email, setEmail] = useState("admin@gotecha.com");
+  const [password, setPassword] = useState("");
+  const [err, setErr] = useState("");
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">Administrator Access</h2>
+          <button type="button" onClick={() => setAdminPrompt(false)} aria-label="Close">
+            <X className="size-4" />
+          </button>
+        </div>
+        <form
+          className="space-y-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            const res = login(email, password);
+            if (!res.ok) {
+              setErr(res.error ?? "Failed");
+              return;
+            }
+            const u = useGotcha.getState().users.find((x) => x.email === email);
+            if (!u?.isAdmin) {
+              setErr("This account is not an administrator");
+              return;
+            }
+            setAdminPrompt(false);
+            setView("admin");
+          }}
+        >
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Admin password"
+            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
+          />
+          {err && <p className="text-xs text-danger">{err}</p>}
+          <button type="submit" className="w-full rounded-md bg-primary py-2 text-sm font-medium">
+            Enter
+          </button>
+          <p className="text-[10px] text-subtle">admin@gotecha.com / adminhunt</p>
+        </form>
+      </div>
+    </div>
+  );
+}

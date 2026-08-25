@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "GOTECHA",
+      "hasCanvas": false,
+      "bodyTextLen": 2355,
+      "bodyTextHash": "de4b0a2e561a4db293c0a7261b31c2d769cfbf3e3614d9eaef917e0f3b88d9cd",
+      "bodyTextPrefix": "GOTECHA THE HUNT ENDS. Dashboard AI Job Search Opportunities App",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "GOTECHA",
+      "hasCanvas": false,
+      "bodyTextLen": 2337,
+      "bodyTextHash": "0ade3a4823dd53c4b7ee3378ab17f38e29a27304901e85a3610f3d55e1036c2c",
+      "bodyTextPrefix": "GOTECHA THE HUNT ENDS. Dashboard AI Job Search Opportunities App",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}
