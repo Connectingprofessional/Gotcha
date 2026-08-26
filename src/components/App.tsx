@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LayoutGrid,
   Search,
@@ -30,11 +30,10 @@ import {
   ChevronRight,
   LogOut,
 } from "lucide-react";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { cn } from "@/lib/utils";
-import { JOBS, LEARNING, MARKET, ROLES, FUNCTIONS, INDUSTRIES, LOCATIONS, scoreMatch, type Job } from "@/lib/data";
+import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, scoreMatch, type Job } from "@/lib/data";
 import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
-import { NetworkGlobe } from "@/components/NetworkGlobe";
+import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
 import { askGotcha } from "@/lib/ai";
 import { authClient } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
@@ -97,59 +96,6 @@ function FieldSelect({
   );
 }
 
-function MatchRing({ value, size = 56 }: { value: number; size?: number }) {
-  const r = 20;
-  const c = 2 * Math.PI * r;
-  const off = c - (value / 100) * c;
-  return (
-    <svg width={size} height={size} viewBox="0 0 48 48" className="shrink-0">
-      <circle cx="24" cy="24" r={r} fill="none" stroke="currentColor" className="text-border-strong" strokeWidth="5" />
-      <circle
-        cx="24"
-        cy="24"
-        r={r}
-        fill="none"
-        stroke="url(#mr)"
-        strokeWidth="5"
-        strokeLinecap="round"
-        strokeDasharray={c}
-        strokeDashoffset={off}
-        transform="rotate(-90 24 24)"
-      />
-      <defs>
-        <linearGradient id="mr" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#22c55e" />
-          <stop offset="100%" stopColor="#7c5cff" />
-        </linearGradient>
-      </defs>
-    </svg>
-  );
-}
-
-function JobRow({ job, onOpen }: { job: Job; onOpen: (j: Job) => void }) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(job)}
-      className="flex w-full items-center gap-3 rounded-md px-1 py-2 text-left transition-colors duration-150 hover:bg-card-2"
-    >
-      <span
-        className="flex size-9 items-center justify-center rounded-sm text-xs font-semibold text-fg"
-        style={{ background: job.logoBg }}
-      >
-        {job.logo}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium text-fg">{job.title}</span>
-        <span className="block truncate text-xs text-muted">
-          {job.company} · {job.location} · {job.work}
-        </span>
-      </span>
-      <span className="text-sm font-semibold tabular text-success">{job.match}%</span>
-      <span className="hidden text-[10px] uppercase tracking-wide text-subtle sm:inline">Match</span>
-    </button>
-  );
-}
 
 export function App() {
   const view = useGotcha((s) => s.view);
@@ -271,7 +217,7 @@ export function App() {
 
           <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 px-4 pb-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-6">
             <main className="min-w-0">
-              {view === "dashboard" && <Dashboard onOpenJob={setJob} />}
+              {view === "dashboard" && <GotchaCareerDashboard onOpenJob={setJob} />}
               {view === "search" && <SearchPage onOpenJob={setJob} />}
               {view === "opportunities" && <OpportunitiesPage onOpenJob={setJob} />}
               {view === "applications" && <ApplicationsPage onOpenJob={setJob} />}
@@ -339,205 +285,6 @@ export function App() {
   );
 }
 
-function Dashboard({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
-  const filters = useGotcha((s) => s.filters);
-  const setFilters = useGotcha((s) => s.setFilters);
-  const setView = useGotcha((s) => s.setView);
-  const applications = useGotcha((s) => s.applications);
-  const user = useSessionUser();
-  const top = JOBS.slice(0, 3);
-  const counts = {
-    applied: applications.filter((a) => a.status === "applied").length,
-    interview: applications.filter((a) => a.status === "interview").length,
-    assessment: applications.filter((a) => a.status === "assessment").length,
-    offer: applications.filter((a) => a.status === "offer").length,
-    rejected: applications.filter((a) => a.status === "rejected").length,
-  };
-  const pie = [
-    { name: "Applied", value: counts.applied, color: "#38bdf8" },
-    { name: "Interview", value: counts.interview, color: "#7c5cff" },
-    { name: "Assessment", value: counts.assessment, color: "#f59e0b" },
-    { name: "Offer", value: counts.offer, color: "#22c55e" },
-    { name: "Rejected", value: counts.rejected, color: "#ef4444" },
-  ];
-
-  return (
-    <div className="space-y-4">
-      <section className="relative overflow-hidden rounded-xl border border-border bg-card px-5 py-6 md:px-8 md:py-8">
-        <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[48%] md:block">
-          <NetworkGlobe />
-        </div>
-        <div className="relative max-w-[34rem]">
-          <h1 className="font-display text-4xl font-semibold leading-[1.05] tracking-tight md:text-5xl">
-            THE HUNT
-            <br />
-            <span className="bg-linear-to-r from-primary-3 to-primary bg-clip-text text-transparent">ENDS HERE.</span>
-          </h1>
-          <p className="mt-4 max-w-md text-sm text-muted md:text-base">
-            Your next opportunity isn’t something you chase.
-            <br />
-            <span className="font-semibold text-primary-3">Gotcha</span> finds where you fit.
-          </p>
-        </div>
-        <div className="relative mt-6 flex flex-col gap-0 overflow-hidden rounded-lg border border-border bg-bg/70 md:flex-row md:items-stretch">
-          <FieldSelect label="Role / Job Title" value={filters.role} options={ROLES} onChange={(v) => setFilters({ role: v })} />
-          <FieldSelect label="Function" value={filters.function} options={FUNCTIONS} onChange={(v) => setFilters({ function: v })} />
-          <FieldSelect label="Industry" value={filters.industry} options={INDUSTRIES} onChange={(v) => setFilters({ industry: v })} />
-          <FieldSelect label="Location" value={filters.location} options={LOCATIONS} onChange={(v) => setFilters({ location: v })} />
-          <button
-            type="button"
-            onClick={() => setView("search")}
-            className="m-2 flex items-center justify-center rounded-md bg-primary px-4 py-3 text-fg glow-primary"
-            aria-label="Search"
-          >
-            <Search className="size-5" />
-          </button>
-        </div>
-        <div className="relative mt-3 flex flex-wrap items-center gap-2 text-xs text-muted">
-          <span>Popular Searches:</span>
-          {["Data Analyst", "UX Designer", "DevOps Engineer", "Sales Manager", "Marketing Lead"].map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => {
-                setFilters({ role: p });
-                setView("search");
-              }}
-              className="rounded-full border border-border px-2.5 py-1 hover:border-border-strong hover:text-fg"
-            >
-              {p}
-            </button>
-          ))}
-          <button type="button" onClick={() => setView("search")} className="rounded-full border border-border px-2.5 py-1">
-            More +
-          </button>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="AI Match Score" value="94%" hint="Excellent Match" ring={<MatchRing value={94} />} />
-        <StatCard
-          label="Live Opportunities"
-          value="2,846"
-          hint="+12% this week"
-          icon={<Briefcase className="size-5 text-info" />}
-        />
-        <StatCard
-          label="Profile Fit"
-          value="87%"
-          hint="Strong Alignment"
-          icon={<UserRound className="size-5 text-success" />}
-        />
-        <StatCard
-          label="Market Signal"
-          value="Strong"
-          hint="High Demand"
-          icon={<LineChart className="size-5 text-success" />}
-        />
-      </section>
-
-      <section className="grid gap-3 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-4 lg:col-span-1">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Top Matching Opportunities</h2>
-            <button type="button" className="text-xs text-primary-3" onClick={() => setView("opportunities")}>
-              View all
-            </button>
-          </div>
-          <div className="space-y-1">
-            {top.map((j) => (
-              <JobRow key={j.id} job={j} onOpen={onOpenJob} />
-            ))}
-          </div>
-          <button type="button" className="mt-3 text-xs font-medium text-primary-3" onClick={() => setView("opportunities")}>
-            Explore More Opportunities →
-          </button>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-2 flex items-center justify-between">
-            <h2 className="text-sm font-semibold">Application Pipeline</h2>
-            <button type="button" className="text-xs text-primary-3" onClick={() => setView("applications")}>
-              View all
-            </button>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="relative h-[140px] w-[140px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={pie} dataKey="value" innerRadius={42} outerRadius={62} paddingAngle={2} stroke="none">
-                    {pie.map((e) => (
-                      <Cell key={e.name} fill={e.color} />
-                    ))}
-                  </Pie>
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-semibold tabular">{applications.length}</span>
-                <span className="text-[10px] text-muted">Total</span>
-              </div>
-            </div>
-            <ul className="space-y-1.5 text-xs">
-              {pie.map((p) => (
-                <li key={p.name} className="flex items-center gap-2">
-                  <span className="size-2 rounded-full" style={{ background: p.color }} />
-                  <span className="w-20 text-muted">{p.name}</span>
-                  <span className="tabular font-medium">{p.value}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border bg-card p-4">
-          <h2 className="text-sm font-semibold">AI Career Insight</h2>
-          <p className="mt-2 inline-flex items-center gap-1 rounded-full bg-warn/15 px-2 py-0.5 text-[10px] font-medium text-warn">
-            <Zap className="size-3" /> Recommended for you
-          </p>
-          <p className="mt-3 text-sm leading-relaxed text-muted">
-            Your profile is in high demand for Product Management roles in FinTech companies.
-          </p>
-          <p className="mt-3 text-xs text-subtle">Top skills to boost your match:</p>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {(user?.skills.length ? user.skills : ["Product Strategy", "Analytics", "Stakeholder Mgmt"]).map((s) => (
-              <span key={s} className="rounded-full border border-border px-2 py-0.5 text-[11px] text-fg">
-                {s}
-              </span>
-            ))}
-          </div>
-          <button type="button" className="mt-4 text-xs font-medium text-primary-3" onClick={() => setView("coach")}>
-            See Full Insight →
-          </button>
-        </div>
-      </section>
-    </div>
-  );
-}
-
-function StatCard({
-  label,
-  value,
-  hint,
-  ring,
-  icon,
-}: {
-  label: string;
-  value: string;
-  hint: string;
-  ring?: ReactNode;
-  icon?: ReactNode;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-4">
-      <div>
-        <p className="text-[10px] font-medium uppercase tracking-wider text-subtle">{label}</p>
-        <p className="mt-1 text-2xl font-semibold tabular">{value}</p>
-        <p className="mt-1 text-xs text-success">{hint}</p>
-      </div>
-      {ring ?? <span className="flex size-11 items-center justify-center rounded-full bg-card-2">{icon}</span>}
-    </div>
-  );
-}
 
 function filterJobs(role: string, fn: string, industry: string, location: string) {
   return JOBS.filter((j) => {
