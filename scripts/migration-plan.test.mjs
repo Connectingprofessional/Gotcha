@@ -15,10 +15,6 @@ import { projectRoot } from "./with-app-env.mjs";
 
 const AUTH_MIGRATION = "0001_auth.sql";
 
-/**
- * The auth-on copy of the Better Auth schema and its source, or null when the
- * app has not turned sign-in on (the shipped state).
- */
 function authSchemaCopy(root) {
   const copy = join(root, "migrations", AUTH_MIGRATION);
   const source = join(root, "migrations/auth", AUTH_MIGRATION);
@@ -33,8 +29,6 @@ test("_migrations keys on basename, not path", () => {
 });
 
 test("a file already applied from another directory does not re-apply", () => {
-  // The auth-on path copies migrations/auth/0001_auth.sql into the globbed
-  // directory; a database that already has it must not run it twice.
   assert.deepEqual(pendingMigrations(["/migrations/0001_auth.sql"], ["0001_auth.sql"]), []);
 });
 
@@ -56,17 +50,28 @@ test("non-.sql entries are dropped (readdir also yields the auth/ directory)", (
   assert.deepEqual(pendingMigrations(["auth", "README.md"], []), []);
 });
 
-test("the auth schema ships outside the globbed directory", () => {
+test("the auth schema copy is included in the root migration plan when sign-in is on", () => {
   const migrationsDir = join(projectRoot(), "migrations");
-  assert.deepEqual(pendingMigrations(readdirSync(migrationsDir), []), []);
-  assert.ok(readdirSync(join(migrationsDir, "auth")).includes("0001_auth.sql"));
+  const entries = readdirSync(migrationsDir);
+  const pending = pendingMigrations(entries, []);
+  const copy = authSchemaCopy(projectRoot());
+
+  if (copy === null) {
+    assert.deepEqual(pending, []);
+    return;
+  }
+
+  assert.deepEqual(
+    pending.map(({ name }) => name),
+    ["0001_auth.sql", "0002_admin_flag.sql"],
+  );
+  assert.ok(entries.includes(AUTH_MIGRATION));
+  assert.ok(entries.includes("0002_admin_flag.sql"));
 });
 
 test("this workspace's auth schema copy is byte-identical to its source", () => {
-  // An edited copy diverges silently: basename keying skips it on a database
-  // that already ran the original, and applies it on a fresh PGLite preview.
   const pair = authSchemaCopy(projectRoot());
-  if (pair === null) return; // sign-in off — nothing has been copied up
+  if (pair === null) return;
   assert.equal(
     pair.copy,
     pair.source,
