@@ -54,11 +54,7 @@ function canonicalUrl(value?: string): string | undefined {
   }
 }
 
-/** Stable identity used to collapse the same opportunity reported by many sources. */
-export function opportunityDeduplicationKey(input: OpportunityRecord): string {
-  const opportunity = normalizeOpportunity(input);
-  const url = canonicalUrl(opportunity.applicationUrl ?? opportunity.sourceUrl);
-  if (url) return `url:${url}`;
+function fallbackOpportunityKey(opportunity: OpportunityRecord): string {
   return [
     "job",
     keyPart(opportunity.company),
@@ -67,24 +63,50 @@ export function opportunityDeduplicationKey(input: OpportunityRecord): string {
   ].join(":");
 }
 
+/** Stable identity used to collapse the same opportunity reported by many sources. */
+export function opportunityDeduplicationKey(input: OpportunityRecord): string {
+  const opportunity = normalizeOpportunity(input);
+  const url = canonicalUrl(opportunity.applicationUrl ?? opportunity.sourceUrl);
+  if (url) return `url:${url}`;
+  return fallbackOpportunityKey(opportunity);
+}
+
+function mergeOpportunity(previous: OpportunityRecord, incoming: OpportunityRecord): OpportunityRecord {
+  const merged: OpportunityRecord = { ...previous };
+  for (const [field, value] of Object.entries(incoming) as [keyof OpportunityRecord, OpportunityRecord[keyof OpportunityRecord]][]) {
+    if (
+      value !== undefined &&
+      value !== "" &&
+      (merged[field] === undefined ||
+        (Array.isArray(value) && value.length > (Array.isArray(merged[field]) ? merged[field].length : 0)))
+    ) {
+      merged[field] = value as never;
+    }
+  }
+  return merged;
+}
+
 /** Deduplicates cross-portal results while retaining the richest record. */
 export function deduplicateOpportunities(inputs: OpportunityRecord[]): OpportunityRecord[] {
-  const byKey = new Map<string, OpportunityRecord>();
+  const byIdentity = new Map<string, OpportunityRecord>();
+
   for (const input of inputs) {
     const normalized = normalizeOpportunity(input);
-    const key = opportunityDeduplicationKey(normalized);
-    const previous = byKey.get(key);
+    const url = canonicalUrl(normalized.applicationUrl ?? normalized.sourceUrl);
+    const urlKey = url ? `url:${url}` : undefined;
+    const fallbackKey = fallbackOpportunityKey(normalized);
+    const previous = (urlKey ? byIdentity.get(urlKey) : undefined) ?? byIdentity.get(fallbackKey);
+
     if (!previous) {
-      byKey.set(key, normalized);
+      byIdentity.set(fallbackKey, normalized);
+      if (urlKey) byIdentity.set(urlKey, normalized);
       continue;
     }
-    const merged: OpportunityRecord = { ...previous };
-    for (const [field, value] of Object.entries(normalized) as [keyof OpportunityRecord, OpportunityRecord[keyof OpportunityRecord]][]) {
-      if (value !== undefined && value !== "" && (merged[field] === undefined || (Array.isArray(value) && value.length > (Array.isArray(merged[field]) ? merged[field].length : 0)))) {
-        merged[field] = value as never;
-      }
-    }
-    byKey.set(key, merged);
+
+    const merged = mergeOpportunity(previous, normalized);
+    byIdentity.set(fallbackKey, merged);
+    if (urlKey) byIdentity.set(urlKey, merged);
   }
-  return [...byKey.values()];
+
+  return [...new Set(byIdentity.values())];
 }
