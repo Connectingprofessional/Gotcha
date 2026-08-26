@@ -36,6 +36,8 @@ import { JOBS, LEARNING, MARKET, ROLES, FUNCTIONS, INDUSTRIES, LOCATIONS, scoreM
 import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
 import { NetworkGlobe } from "@/components/NetworkGlobe";
 import { askGotcha } from "@/lib/ai";
+import { authClient } from "@/lib/auth/client";
+import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -1200,11 +1202,12 @@ function DemoModal() {
 function AdminGate() {
   const open = useGotcha((s) => s.adminPrompt);
   const setAdminPrompt = useGotcha((s) => s.setAdminPrompt);
-  const login = useGotcha((s) => s.login);
   const setView = useGotcha((s) => s.setView);
-  const [email, setEmail] = useState("admin@gotecha.com");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [setupMsg, setSetupMsg] = useState("");
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
@@ -1217,25 +1220,35 @@ function AdminGate() {
         </div>
         <form
           className="space-y-2"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            const res = login(email, password);
-            if (!res.ok) {
-              setErr(res.error ?? "Failed");
-              return;
+            setErr("");
+            setBusy(true);
+            try {
+              const { data, error } = await authClient.signIn.email({ email, password });
+              if (error || !data) {
+                setErr(error?.message ?? "Sign-in failed");
+                return;
+              }
+              const isAdmin = Boolean(
+                (data.user as unknown as { isAdmin?: boolean } | undefined)?.isAdmin,
+              );
+              if (!isAdmin) {
+                setErr("This account is not an administrator");
+                return;
+              }
+              setAdminPrompt(false);
+              setView("admin");
+            } finally {
+              setBusy(false);
             }
-            const u = useGotcha.getState().users.find((x) => x.email === email);
-            if (!u?.isAdmin) {
-              setErr("This account is not an administrator");
-              return;
-            }
-            setAdminPrompt(false);
-            setView("admin");
           }}
         >
           <input
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="Admin email"
             className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
           />
           <input
@@ -1246,11 +1259,28 @@ function AdminGate() {
             className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
           />
           {err && <p className="text-xs text-danger">{err}</p>}
-          <button type="submit" className="w-full rounded-md bg-primary py-2 text-sm font-medium">
-            Enter
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-md bg-primary py-2 text-sm font-medium disabled:opacity-60"
+          >
+            {busy ? "Signing in…" : "Enter"}
           </button>
-          <p className="text-[10px] text-subtle">admin@gotecha.com / adminhunt</p>
         </form>
+        <div className="mt-3 border-t border-border pt-3">
+          <button
+            type="button"
+            className="w-full text-[11px] text-subtle underline decoration-dotted"
+            onClick={async () => {
+              setSetupMsg("Setting up…");
+              const res = await provisionAdmin();
+              setSetupMsg(res.ok ? `Admin account ready: ${res.email}` : res.error);
+            }}
+          >
+            First-time setup: provision admin account
+          </button>
+          {setupMsg && <p className="mt-1 text-[11px] text-subtle">{setupMsg}</p>}
+        </div>
       </div>
     </div>
   );
