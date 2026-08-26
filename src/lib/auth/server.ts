@@ -81,6 +81,13 @@ const grokIssuer = env("GROK_AUTH_ISSUER") ?? GROK_ISSUER_DEFAULT;
 const grokClientId = env("GROK_AUTH_CLIENT_ID") ?? PREVIEW_CLIENT_ID;
 const grokClientSecret = env("GROK_AUTH_CLIENT_SECRET") ?? PREVIEW_CLIENT_SECRET;
 
+// Own Google OAuth app (independent of the Grok broker above — this works on
+// any deployment target, including outside Grok's platform, as long as these
+// two are set as env secrets from a Google Cloud OAuth client).
+const googleClientId = env("GOOGLE_CLIENT_ID");
+const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
+export const googleAuthConfigured = Boolean(googleClientId && googleClientSecret);
+
 /** True when federated sign-in is active (real auth is enforced). */
 export const authConfigured =
   !authDisabled && Boolean(grokClientId && grokClientSecret);
@@ -212,6 +219,16 @@ export const auth = betterAuth({
 
   // Local email/password — toggled only via `./email-password` (not a plugin).
   ...(emailAndPasswordEnabled ? { emailAndPassword: { enabled: true } } : {}),
+
+  // Our own direct Google sign-in (separate from the Grok broker above — see
+  // googleAuthConfigured). Works standalone on any deployment target.
+  ...(googleAuthConfigured
+    ? {
+        socialProviders: {
+          google: { clientId: googleClientId as string, clientSecret: googleClientSecret as string },
+        },
+      }
+    : {}),
 
   // Platform-administrator flag. `input: false` means it can NEVER be set via
   // the public sign-up/update-user API — only a direct DB write (or a

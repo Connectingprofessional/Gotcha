@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   LayoutGrid,
   Search,
@@ -155,8 +155,30 @@ export function App() {
   const view = useGotcha((s) => s.view);
   const setView = useGotcha((s) => s.setView);
   const user = useSessionUser();
+  const sessionEmail = useGotcha((s) => s.sessionEmail);
+  const hydrateFromAuth = useGotcha((s) => s.hydrateFromAuth);
+  const setAdminPrompt = useGotcha((s) => s.setAdminPrompt);
   const [mobileNav, setMobileNav] = useState(false);
   const [job, setJob] = useState<Job | null>(null);
+  const { data: authSession } = authClient.useSession();
+
+  // Bridges a real backend session (Google sign-in) into the app's local
+  // session model on first load / after the OAuth redirect back.
+  useEffect(() => {
+    if (!authSession?.user?.email || sessionEmail) return;
+    const wantsAdmin = new URLSearchParams(window.location.search).get("authIntent") === "admin";
+    const isAdmin = Boolean((authSession.user as unknown as { isAdmin?: boolean }).isAdmin);
+    hydrateFromAuth(authSession.user.email, authSession.user.name ?? "");
+    if (wantsAdmin) {
+      if (isAdmin) {
+        setAdminPrompt(false);
+        setView("admin");
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete("authIntent");
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [authSession, sessionEmail, hydrateFromAuth, setAdminPrompt, setView]);
 
   return (
     <div className="gotecha-grid min-h-dvh bg-bg text-fg">
@@ -1057,6 +1079,10 @@ function RightRail() {
                 />
               </label>
             )}
+            <GoogleSignInButton callbackURL="/" />
+            <div className="flex items-center gap-2 py-1 text-[10px] uppercase tracking-wider text-muted">
+              <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+            </div>
             <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
               <Mail className="size-4 text-muted" />
               <input
@@ -1199,6 +1225,44 @@ function DemoModal() {
   );
 }
 
+function GoogleSignInButton({ callbackURL }: { callbackURL: string }) {
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState("");
+  return (
+    <div>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          setErr("");
+          setBusy(true);
+          try {
+            const { error } = await authClient.signIn.social({
+              provider: "google",
+              callbackURL,
+            });
+            if (error) setErr(error.message ?? "Google sign-in failed");
+          } catch {
+            setErr("Google sign-in is not configured on this deployment yet.");
+          } finally {
+            setBusy(false);
+          }
+        }}
+        className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium"
+      >
+        <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z" />
+          <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.73-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.11A12 12 0 0 0 12 24Z" />
+          <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.27A12 12 0 0 0 0 12c0 1.94.46 3.77 1.27 5.39l4-3.11Z" />
+          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0A12 12 0 0 0 1.27 6.61l4 3.11C6.22 6.86 8.87 4.75 12 4.75Z" />
+        </svg>
+        {busy ? "Redirecting…" : "Continue with Google"}
+      </button>
+      {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
+    </div>
+  );
+}
+
 function AdminGate() {
   const open = useGotcha((s) => s.adminPrompt);
   const setAdminPrompt = useGotcha((s) => s.setAdminPrompt);
@@ -1217,6 +1281,10 @@ function AdminGate() {
           <button type="button" onClick={() => setAdminPrompt(false)} aria-label="Close">
             <X className="size-4" />
           </button>
+        </div>
+        <GoogleSignInButton callbackURL="/?authIntent=admin" />
+        <div className="my-2 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">
+          <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
         </div>
         <form
           className="space-y-2"
