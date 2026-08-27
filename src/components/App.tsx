@@ -1088,8 +1088,12 @@ function AdminGate() {
             className="w-full text-[11px] text-subtle underline decoration-dotted"
             onClick={async () => {
               setSetupMsg("Setting up…");
-              const res = await provisionAdmin();
-              setSetupMsg(res.ok ? `Admin account ready: ${res.email}` : res.error);
+              try {
+                const res = await provisionAdmin();
+                setSetupMsg(res.ok ? `Admin account ready: ${res.email}` : res.error);
+              } catch (e) {
+                setSetupMsg(e instanceof Error ? `Error: ${e.message}` : "Unexpected error during setup");
+              }
             }}
           >
             First-time setup: provision admin account
