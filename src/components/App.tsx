@@ -215,7 +215,12 @@ export function App() {
             </div>
           </header>
 
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 px-4 pb-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-6">
+          <div
+            className={cn(
+              "grid min-h-0 flex-1 gap-4 px-4 pb-6 lg:px-6",
+              view === "dashboard" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]",
+            )}
+          >
             <main className="min-w-0">
               {view === "dashboard" && <GotchaCareerDashboard onOpenJob={setJob} />}
               {view === "search" && <SearchPage onOpenJob={setJob} />}
@@ -229,7 +234,7 @@ export function App() {
               {view === "profile" && <ProfilePage />}
               {view === "admin" && <AdminPage />}
             </main>
-            <RightRail />
+            {view !== "dashboard" && <RightRail />}
           </div>
 
           <footer className="mt-auto border-t border-border px-4 py-6 md:px-6">
