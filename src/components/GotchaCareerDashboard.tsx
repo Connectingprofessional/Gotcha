@@ -35,6 +35,9 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
   const user = useSessionUser();
   const applications = useGotcha((s) => s.applications);
   const setView = useGotcha((s) => s.setView);
+  const careerSignals = useGotcha((s) => s.careerSignals);
+  const lastAgentRunAt = useGotcha((s) => s.lastAgentRunAt);
+  const runCareerAgent = useGotcha((s) => s.runCareerAgent);
 
   const analytics = applicationAnalytics(applications);
   const huntScore = careerHuntScore(user, applications) || 85;
@@ -283,6 +286,30 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
           ) : (
             <p className="text-xs leading-5 text-muted">Complete your profile so the AI Career Agent can surface recommendations.</p>
           )}
+
+          <div className="mt-3 border-t border-border/60 pt-3">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[10px] uppercase tracking-wider text-muted">
+                {lastAgentRunAt ? `Last checked ${new Date(lastAgentRunAt).toLocaleString()}` : "Not checked yet"}
+              </p>
+              <button type="button" onClick={runCareerAgent} className="text-[10px] font-semibold text-primary-3 hover:underline">
+                {careerSignals.length ? "Refresh" : "Check my pipeline"}
+              </button>
+            </div>
+            {careerSignals.length > 0 && (
+              <div className="space-y-2">
+                {careerSignals.map((signal) => (
+                  <div key={signal.id} className="rounded-lg border border-border bg-surface/60 p-2.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className={cn("size-1.5 shrink-0 rounded-full", signal.priority === "high" ? "bg-red-400" : signal.priority === "medium" ? "bg-amber-400" : "bg-slate-400")} />
+                      <p className="text-xs font-medium leading-4 text-fg">{signal.title}</p>
+                    </div>
+                    <p className="mt-1 pl-3 text-[10px] leading-4 text-muted">{signal.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
       </div>
 
