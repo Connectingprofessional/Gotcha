@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Application, SavedSearch } from "./data";
 import { createCareerEvent, type CareerEvent, type CareerEventType } from "./careerEvents";
+import { computeFollowUpDate } from "./career/career-automation.ts";
 import type { GlobalOpportunityContext } from "./global-opportunity-intelligence";
 
 export type ViewId = "dashboard" | "search" | "opportunities" | "applications" | "coach" | "cv" | "hunt" | "market" | "learn" | "saved" | "profile" | "admin";
@@ -35,7 +36,7 @@ export const useGotcha = create<State>()(persist((set, get) => ({
     set({ sessionEmail: normalized, view: "dashboard" });
   },
   setView: view => set({ view }), setFilters: f => set({ filters: { ...get().filters, ...f } }),
-  applyTo: jobId => { if (get().applications.some(a => a.jobId === jobId)) return; set({ applications: [{ id: `a-${Date.now()}`, jobId, status: "applied", appliedAt: new Date().toISOString().slice(0, 10) }, ...get().applications] }); get().recordCareerEvent("application.created", { jobId, source: "gotcha" }, jobId); },
+  applyTo: jobId => { if (get().applications.some(a => a.jobId === jobId)) return; const appliedAt = new Date().toISOString().slice(0, 10); set({ applications: [{ id: `a-${Date.now()}`, jobId, status: "applied", appliedAt, nextFollowUpAt: computeFollowUpDate(appliedAt) }, ...get().applications] }); get().recordCareerEvent("application.created", { jobId, source: "gotcha" }, jobId); },
   setStatus: (id, status) => { const old = get().applications.find(a => a.id === id); set({ applications: get().applications.map(a => a.id === id ? { ...a, status } : a) }); if (old && old.status !== status) get().recordCareerEvent("application.status_changed", { from: old.status, to: status }, old.jobId); },
   toggleSaveJob: jobId => { const ids = get().savedJobIds; set({ savedJobIds: ids.includes(jobId) ? ids.filter(x => x !== jobId) : [...ids, jobId] }); if (!ids.includes(jobId)) get().recordCareerEvent("opportunity.saved", { source: "gotcha" }, jobId); },
   saveCurrentSearch: () => { const f = get().filters; set({ savedSearches: [{ id: `ss-${Date.now()}`, query: [f.role, f.industry, f.location].filter(Boolean).join(" · "), ...f, createdAt: new Date().toISOString().slice(0, 10) }, ...get().savedSearches] }); get().recordCareerEvent("search.performed", { role: f.role, industry: f.industry, location: f.location }); }, removeSavedSearch: id => set({ savedSearches: get().savedSearches.filter(s => s.id !== id) }),

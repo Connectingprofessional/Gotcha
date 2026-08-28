@@ -40,6 +40,7 @@ import { CvIntelligencePage } from "@/components/CvIntelligence";
 import { HuntModePage } from "@/components/HuntMode";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/global-opportunity-intelligence";
+import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
@@ -961,6 +962,12 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const healthTone = { strong: "text-success", stable: "text-muted", watch: "text-warn" }[health];
   const global = evaluateGlobalOpportunity(buildMobilityAndCompContext(job, user));
   const showGlobalPanel = Boolean(job.country) && (job.country?.toLowerCase() !== user?.country?.toLowerCase());
+  const automation = evaluateCareerAutomation({
+    overallScore: job.match,
+    dataConfidence: job.verifiedEmployer ? 90 : 60,
+    applicationUrl: "in-app-apply",
+    userApprovalRequired: true,
+  });
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
@@ -1054,6 +1061,27 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
                   <span>{w}</span>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {!applied && (
+          <div
+            className={cn(
+              "mt-3 flex items-start gap-2 rounded-xl border p-3 text-xs",
+              automation.recommendation === "apply"
+                ? "border-success/30 bg-success/5 text-success"
+                : automation.recommendation === "review"
+                  ? "border-border bg-card text-fg"
+                  : "border-border bg-card text-muted",
+            )}
+          >
+            <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <div>
+              <p className="font-medium">
+                {automation.recommendation === "apply" ? "AI agent: strong match — apply now" : automation.recommendation === "review" ? "AI agent: worth a closer look" : "AI agent: likely not a fit"}
+              </p>
+              <p className="mt-0.5 text-muted">{automation.reasons[0]}</p>
             </div>
           </div>
         )}

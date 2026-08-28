@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildHuntPlan, evaluateCareerAutomation } from "./career-automation.ts";
+import { buildHuntPlan, computeFollowUpDate, evaluateCareerAutomation } from "./career-automation.ts";
 
 test("blocks automation without a verified application URL", () => {
   const result = evaluateCareerAutomation({ overallScore: 90 });
@@ -34,4 +34,13 @@ test("queues qualified opportunities and schedules follow up", () => {
   assert.equal(result.nextFollowUpAt, "2026-08-06T00:00:00.000Z");
   assert.ok(buildHuntPlan("auto_with_approval", result).includes("request_approval"));
   assert.ok(buildHuntPlan("auto_with_approval", result).includes("schedule_follow_up"));
+});
+
+test("computes a follow-up date a fixed number of days after applying", () => {
+  assert.equal(computeFollowUpDate("2026-08-01", 5), "2026-08-06T00:00:00.000Z");
+  assert.equal(computeFollowUpDate("2026-08-01"), "2026-08-08T00:00:00.000Z"); // default 7 days
+});
+
+test("returns undefined for an unparseable applied-at date rather than throwing", () => {
+  assert.equal(computeFollowUpDate("not-a-date"), undefined);
 });

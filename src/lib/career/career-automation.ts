@@ -72,3 +72,16 @@ export function buildHuntPlan(mode: HuntMode, result: CareerAutomationResult): s
   if (result.nextFollowUpAt) steps.push("schedule_follow_up");
   return steps;
 }
+
+/**
+ * Once a candidate has actually applied, the "should I apply" decision is
+ * moot — only follow-up scheduling remains. Kept separate from
+ * `evaluateCareerAutomation` so callers don't need to re-run (and
+ * potentially fail) the apply/review/skip gate just to get a follow-up date
+ * for an application that already exists.
+ */
+export function computeFollowUpDate(appliedAt: string, followUpDays = 7): string | undefined {
+  const applied = new Date(appliedAt);
+  if (Number.isNaN(applied.getTime())) return undefined;
+  return new Date(applied.getTime() + Math.max(1, Math.floor(followUpDays)) * 86_400_000).toISOString();
+}
