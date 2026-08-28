@@ -20,6 +20,22 @@ test("normalizes opportunity fields and skills", () => {
   assert.equal(result.location, "London");
 });
 
+test("clamps invalid experience years and fixes an inverted range", () => {
+  const negative = normalizeOpportunity({ sourceId: "a", title: "x", company: "y", experienceYearsMin: -3 });
+  assert.equal(negative.experienceYearsMin, undefined);
+
+  const inverted = normalizeOpportunity({ sourceId: "b", title: "x", company: "y", experienceYearsMin: 8, experienceYearsMax: 3 });
+  assert.equal(inverted.experienceYearsMax, 8);
+});
+
+test("preserves an unpublished visa sponsorship status as unknown", () => {
+  const result = normalizeOpportunity({ sourceId: "a", title: "x", company: "y" });
+  assert.equal(result.visaSponsorshipAvailable, undefined);
+
+  const published = normalizeOpportunity({ sourceId: "b", title: "x", company: "y", visaSponsorshipAvailable: true });
+  assert.equal(published.visaSponsorshipAvailable, true);
+});
+
 test("uses canonical application URL for cross-source identity", () => {
   const a = { sourceId: "portal-a", title: "PM", company: "Acme", applicationUrl: "https://jobs.example.com/123?utm_source=a#apply" };
   const b = { sourceId: "portal-b", title: "Product Manager", company: "Acme", applicationUrl: "https://jobs.example.com/123?utm_source=b" };

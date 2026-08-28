@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { matchOpportunity, rankOpportunities } from "./opportunity-matcher";
+import { matchOpportunity, rankOpportunities } from "./opportunity-matcher.ts";
 
 const profile = {
   skills: ["TypeScript", "Payments", "Product Analytics"],
@@ -47,6 +47,43 @@ test("penalizes incompatible work mode and seniority", () => {
   assert.ok(match.overall < 60);
   assert.ok(match.gaps.includes("Seniority does not match your target"));
   assert.ok(match.gaps.includes("This opportunity is not remote"));
+});
+
+test("rewards experience fit and flags a shortfall", () => {
+  const senior = matchOpportunity(
+    { ...profile, experienceYears: 8 },
+    { sourceId: "x", title: "Senior Product Manager", company: "Acme", experienceYearsMin: 6, experienceYearsMax: 10 },
+  );
+  assert.equal(senior.experience, 100);
+
+  const junior = matchOpportunity(
+    { ...profile, experienceYears: 2 },
+    { sourceId: "y", title: "Senior Product Manager", company: "Acme", experienceYearsMin: 6, experienceYearsMax: 10 },
+  );
+  assert.ok(junior.experience < 70);
+  assert.ok(junior.gaps.includes("You may be short of the required years of experience"));
+});
+
+test("scores visa sponsorship only when the candidate needs it", () => {
+  const noNeed = matchOpportunity(profile, { sourceId: "a", title: "x", company: "y", visaSponsorshipAvailable: false });
+  assert.equal(noNeed.visa, 100);
+
+  const needsAndOffered = matchOpportunity(
+    { ...profile, needsVisaSponsorship: true },
+    { sourceId: "b", title: "x", company: "y", visaSponsorshipAvailable: true },
+  );
+  assert.equal(needsAndOffered.visa, 100);
+  assert.ok(needsAndOffered.reasons.includes("Employer offers visa sponsorship"));
+
+  const needsButNotOffered = matchOpportunity(
+    { ...profile, needsVisaSponsorship: true },
+    { sourceId: "c", title: "x", company: "y", visaSponsorshipAvailable: false },
+  );
+  assert.equal(needsButNotOffered.visa, 0);
+  assert.ok(needsButNotOffered.gaps.includes("Employer does not offer visa sponsorship"));
+
+  const needsUnpublished = matchOpportunity({ ...profile, needsVisaSponsorship: true }, { sourceId: "d", title: "x", company: "y" });
+  assert.equal(needsUnpublished.visa, 40);
 });
 
 test("ranks opportunities by explainable match score", () => {

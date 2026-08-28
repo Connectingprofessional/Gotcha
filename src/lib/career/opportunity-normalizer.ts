@@ -13,6 +13,15 @@ export type OpportunityRecord = {
   salaryMin?: number;
   salaryMax?: number;
   salaryCurrency?: string;
+  /** Minimum years of experience the opportunity expects, if published. */
+  experienceYearsMin?: number;
+  /** Maximum years of experience the opportunity expects, if published. */
+  experienceYearsMax?: number;
+  /**
+   * Whether the employer/opportunity is known to offer visa/work-permit
+   * sponsorship. `undefined` means unpublished/unknown, not "no".
+   */
+  visaSponsorshipAvailable?: boolean;
   applicationUrl?: string;
   sourceUrl?: string;
   postedAt?: string;
@@ -22,10 +31,21 @@ export type OpportunityRecord = {
 
 const clean = (value?: string) => value?.replace(/\s+/g, " ").trim() || undefined;
 const keyPart = (value?: string) => (clean(value) ?? "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const cleanYears = (value?: number) =>
+  value === undefined || value === null || !Number.isFinite(value) || value < 0 ? undefined : value;
 
 export function normalizeOpportunity(input: OpportunityRecord): OpportunityRecord {
+  const experienceYearsMin = cleanYears(input.experienceYearsMin);
+  let experienceYearsMax = cleanYears(input.experienceYearsMax);
+  if (experienceYearsMax !== undefined && experienceYearsMin !== undefined && experienceYearsMax < experienceYearsMin) {
+    experienceYearsMax = experienceYearsMin;
+  }
+
   return {
     ...input,
+    experienceYearsMin,
+    experienceYearsMax,
+    visaSponsorshipAvailable: input.visaSponsorshipAvailable,
     id: clean(input.id),
     sourceId: clean(input.sourceId) ?? "unknown",
     title: clean(input.title) ?? "Untitled opportunity",
