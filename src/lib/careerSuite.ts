@@ -102,7 +102,7 @@ export function buildAgeingInsights(applications: CareerApplication[], now = Dat
     .filter((application) => application.outcome === "active" || !application.outcome)
     .map((application) => {
       const days = ageDays(application.updatedAt, now);
-      const severity = days >= 12 ? "attention" : days >= 5 ? "stalled" : "normal";
+      const severity: AgeingInsight["severity"] = days >= 12 ? "attention" : days >= 5 ? "stalled" : "normal";
       const recommendedAction = severity === "attention"
         ? "Follow up now and review whether the opportunity is still active."
         : severity === "stalled"
