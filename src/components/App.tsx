@@ -43,6 +43,7 @@ import { HuntModePage } from "@/components/HuntMode";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/global-opportunity-intelligence";
 import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
+import { mapCandidateToRole } from "@/lib/market";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
@@ -972,6 +973,7 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
     applicationUrl: "in-app-apply",
     userApprovalRequired: true,
   });
+  const marketFit = mapCandidateToRole(user, job).filter((row) => row.dimension === "Compensation range" || row.dimension === "Experience" || row.dimension === "Grade level");
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
@@ -1063,6 +1065,31 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
                 <div key={`warning-${i}`} className="flex items-start gap-1.5 text-xs text-muted">
                   <span aria-hidden>i</span>
                   <span>{w}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {marketFit.length > 0 && (
+          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+            <p className="mb-2 text-xs font-medium text-muted">Market fit &amp; negotiation</p>
+            <div className="space-y-2.5">
+              {marketFit.map((row) => (
+                <div key={row.dimension} className="text-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-muted">{row.dimension}</span>
+                    <span
+                      className={cn(
+                        "shrink-0 font-medium",
+                        row.fit === "strong" ? "text-success" : row.fit === "aligned" ? "text-fg" : "text-warn",
+                      )}
+                    >
+                      You: {row.you}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-[10px] text-subtle">Market: {row.market}</p>
+                  <p className="mt-0.5 text-[10px] italic text-muted">{row.negotiate}</p>
                 </div>
               ))}
             </div>
