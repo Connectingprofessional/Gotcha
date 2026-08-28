@@ -317,7 +317,7 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
         <h2 className="mb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
           <ShieldCheck className="size-3.5 text-primary-3" /> Key Metrics &amp; Gotcha Shield
         </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
           <div className="rounded-lg border border-border bg-surface p-3.5">
             <p className="text-[10px] uppercase tracking-wider text-muted">Career Hunt Score</p>
             <p className="mt-1 text-2xl font-bold tabular-nums text-sky-400">{huntScore}<span className="text-xs font-medium text-muted">/100</span></p>
@@ -347,6 +347,11 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
               </div>
             </div>
           </div>
+          <button type="button" onClick={() => setView("profile")} className="rounded-lg border border-border bg-surface p-3.5 text-left transition hover:bg-card-2">
+            <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted"><Bot className="size-3 text-primary-3" /> Career Digital Twin</p>
+            <p className="mt-1 text-2xl font-bold tracking-wide text-primary-3">Active</p>
+            <p className="mt-1 text-[10px] leading-4 text-subtle">Profile, skills, applications and agent signals — one persistent career record.</p>
+          </button>
         </div>
       </section>
     </div>

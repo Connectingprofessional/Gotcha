@@ -11,6 +11,7 @@ import {
   Bookmark,
   UserRound,
   Shield,
+  UsersRound,
   Settings,
   Play,
   ArrowRight,
@@ -35,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
 import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
 import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
+import { GlobalCareerModules } from "@/components/GlobalCareerModules";
 import { askGotcha } from "@/lib/ai";
 import { CvIntelligencePage } from "@/components/CvIntelligence";
 import { HuntModePage } from "@/components/HuntMode";
@@ -57,6 +59,7 @@ const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean
   { id: "market", label: "Market Insights", icon: LineChart },
   { id: "learn", label: "Learning Center", icon: GraduationCap },
   { id: "saved", label: "Saved Searches", icon: Bookmark },
+  { id: "network", label: "Network & Privacy", icon: UsersRound },
   { id: "profile", label: "Profile", icon: UserRound },
   { id: "admin", label: "Admin", icon: Shield, admin: true },
 ];
@@ -241,6 +244,7 @@ export function App() {
               {view === "market" && <MarketPage />}
               {view === "learn" && <LearnPage />}
               {view === "saved" && <SavedPage />}
+              {view === "network" && <GlobalCareerModules />}
               {view === "profile" && <ProfilePage />}
               {view === "admin" && <AdminPage />}
             </main>
