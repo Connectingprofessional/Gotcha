@@ -29,13 +29,18 @@ import {
   Instagram,
   ChevronRight,
   LogOut,
+  Crosshair,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job } from "@/lib/data";
+import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
 import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
 import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
 import { askGotcha } from "@/lib/ai";
 import { CvIntelligencePage } from "@/components/CvIntelligence";
+import { HuntModePage } from "@/components/HuntMode";
+import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
+import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
+import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
@@ -46,6 +51,7 @@ const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean
   { id: "applications", label: "Applications", icon: ClipboardList },
   { id: "coach", label: "AI Career Coach", icon: Sparkles },
   { id: "cv", label: "CV Intelligence", icon: FileText },
+  { id: "hunt", label: "Hunt Mode", icon: Crosshair },
   { id: "market", label: "Market Insights", icon: LineChart },
   { id: "learn", label: "Learning Center", icon: GraduationCap },
   { id: "saved", label: "Saved Searches", icon: Bookmark },
@@ -229,6 +235,7 @@ export function App() {
               {view === "applications" && <ApplicationsPage onOpenJob={setJob} />}
               {view === "coach" && <CoachPage />}
               {view === "cv" && <CvIntelligencePage />}
+              {view === "hunt" && <HuntModePage />}
               {view === "market" && <MarketPage />}
               {view === "learn" && <LearnPage />}
               {view === "saved" && <SavedPage />}
@@ -418,9 +425,62 @@ function OpportunitiesPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
 function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
   const applications = useGotcha((s) => s.applications);
   const setStatus = useGotcha((s) => s.setStatus);
+
+  const STATUS_TO_STAGE: Record<Application["status"], CareerApplication["stage"]> = {
+    applied: "applied",
+    assessment: "screened",
+    interview: "interview",
+    offer: "offer",
+    rejected: "applied",
+  };
+  const careerApps: CareerApplication[] = applications
+    .map((a): CareerApplication | null => {
+      const job = JOBS.find((j) => j.id === a.jobId);
+      if (!job) return null;
+      return {
+        id: a.id,
+        company: job.company,
+        role: job.title,
+        location: job.location,
+        source: job.source,
+        cvVersion: a.cvVariant,
+        stage: STATUS_TO_STAGE[a.status],
+        outcome: a.status === "rejected" ? "rejected" : "active",
+        enteredAt: a.appliedAt,
+        updatedAt: a.lastActivityAt ?? a.appliedAt,
+      };
+    })
+    .filter((x): x is CareerApplication => x !== null);
+  const ageing = buildAgeingInsights(careerApps).filter((i) => i.severity !== "normal");
+
   return (
     <div className="space-y-3">
       <h1 className="text-xl font-semibold">Applications</h1>
+
+      {ageing.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-2 text-sm font-medium">Needs attention</p>
+          <div className="space-y-1.5">
+            {ageing.map((i) => {
+              const app = applications.find((a) => a.id === i.applicationId);
+              const job = app ? JOBS.find((j) => j.id === app.jobId) : null;
+              return (
+                <div key={i.applicationId} className="flex items-center justify-between gap-3 text-xs">
+                  <span>
+                    <span className={i.severity === "attention" ? "text-danger" : "text-warn"}>
+                      {i.severity === "attention" ? "●" : "●"}
+                    </span>{" "}
+                    <span className="font-medium">{job?.company ?? "Unknown"}</span>{" "}
+                    <span className="text-muted">— {i.ageDays}d since last activity</span>
+                  </span>
+                  <span className="text-muted">{i.recommendedAction}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-left text-sm">
           <thead className="bg-card text-xs uppercase tracking-wide text-subtle">
@@ -548,9 +608,54 @@ function MarketPage() {
 }
 
 function LearnPage() {
+  const user = useSessionUser();
+  const skills = user?.skills ?? [];
+  const targetTitle = user?.targetRoles?.[0] ?? user?.title ?? "";
+  const marketJobs = JOBS.filter((j) => !targetTitle || j.title.toLowerCase().includes(targetTitle.toLowerCase().split(" ")[0] ?? ""));
+  const targetSkills = [...new Set(marketJobs.flatMap((j) => j.tags))].slice(0, 8);
+  const plan = buildDevelopmentPlan({ currentSkills: skills, targetSkills });
+  const importanceTone = { critical: "text-danger", high: "text-warn", medium: "text-muted" } as const;
+
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <h1 className="text-xl font-semibold">Learning Center</h1>
+
+      {plan.gaps.length > 0 && (
+        <div className="rounded-xl border border-border bg-card p-4">
+          <p className="mb-1 text-sm font-medium">
+            Your development plan{targetTitle ? ` for ${targetTitle}` : ""}
+          </p>
+          <p className="mb-3 text-xs text-muted">
+            Based on skills that appear most often in roles matching your target — vs. your current profile.
+          </p>
+          <div className="mb-3 flex flex-wrap gap-1.5">
+            {plan.gaps.map((g) => (
+              <span key={g.skill} className={cn("rounded-full border border-border px-2.5 py-1 text-xs", importanceTone[g.importance])}>
+                {g.skill}
+              </span>
+            ))}
+          </div>
+          <div className="grid gap-3 md:grid-cols-3">
+            {[
+              { label: "30 days", items: plan.thirtyDay },
+              { label: "60 days", items: plan.sixtyDay },
+              { label: "90 days", items: plan.ninetyDay },
+            ].map((col) => (
+              <div key={col.label}>
+                <p className="mb-1.5 text-[11px] font-medium uppercase tracking-wide text-subtle">{col.label}</p>
+                <ul className="space-y-1">
+                  {col.items.map((item, i) => (
+                    <li key={i} className="text-xs text-muted">
+                      • {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {LEARNING.map((l) => (
         <article key={l.id} className="rounded-xl border border-border bg-card p-4">
           <p className="text-[10px] uppercase tracking-wide text-primary-3">{l.tag}</p>
@@ -847,6 +952,11 @@ function RightRail() {
 function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const applyTo = useGotcha((s) => s.applyTo);
   const applied = useGotcha((s) => s.applications.some((a) => a.jobId === job.id));
+  const companyJobs = JOBS.filter((j) => j.company === job.company);
+  const profile = deriveCompanyProfile(job.company, companyJobs);
+  const health = companyHealth(profile);
+  const healthLabel = { strong: "Strong hiring signal", stable: "Stable", watch: "Worth a closer look" }[health];
+  const healthTone = { strong: "text-success", stable: "text-muted", watch: "text-warn" }[health];
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
@@ -866,6 +976,29 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
           {job.salary} · {job.posted} · {job.source}
         </p>
         <p className="mt-2 text-sm font-semibold text-success">{job.match}% match</p>
+
+        <div className="mt-4 rounded-xl border border-border bg-card p-3">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-xs font-medium text-muted">Company snapshot</p>
+            <span className={cn("text-xs font-medium", healthTone)}>{healthLabel}</span>
+          </div>
+          <div className="space-y-1.5">
+            {profile.signals.map((s, i) => (
+              <div key={i} className="flex items-center justify-between text-xs">
+                <span className="text-muted">{s.label}</span>
+                <span
+                  className={cn(
+                    "font-medium",
+                    s.severity === "positive" ? "text-success" : s.severity === "warning" ? "text-warn" : "text-fg",
+                  )}
+                >
+                  {s.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <button
           type="button"
           disabled={applied}
