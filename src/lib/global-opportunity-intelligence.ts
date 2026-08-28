@@ -121,6 +121,59 @@ export type GlobalOpportunityResult = {
   reasons: string[];
 };
 
+/**
+ * Minimal shape this module needs from a job listing and a user profile.
+ * Kept structural (rather than importing the app's `Job`/`User` types) so
+ * this module has zero dependency on `./data` or `./store` and stays usable
+ * from any context, including tests, without risking an import cycle.
+ */
+export type JobMobilitySource = {
+  country?: string;
+  currency?: string;
+  salaryMin?: number;
+  salaryMax?: number;
+  visaSponsorship?: "unknown" | "yes" | "no";
+  relocation?: "unknown" | "available" | "not_available";
+};
+
+export type UserMobilitySource = {
+  country?: string;
+  currency?: string;
+  visaStatus?: string;
+};
+
+/**
+ * Builds a `GlobalOpportunityContext` from data the app already has on a
+ * job listing and the signed-in user's profile — no external mobility, tax,
+ * FX, or cost-of-living data is fabricated. Those fields are simply left
+ * undefined, and `evaluateGlobalOpportunity` already reports the resulting
+ * gaps as warnings/"unknown" rather than guessing.
+ */
+export function buildMobilityAndCompContext(job: JobMobilitySource, user?: UserMobilitySource | null): GlobalOpportunityContext {
+  const targetCurrency = user?.currency ?? job.currency;
+  const compensation = job.currency && (job.salaryMin !== undefined || job.salaryMax !== undefined)
+    ? { currency: job.currency, min: job.salaryMin, max: job.salaryMax, period: "annual" as SalaryPeriod }
+    : undefined;
+
+  const sameCountry = Boolean(job.country && user?.country && job.country.toLowerCase() === user.country.toLowerCase());
+  const mobility: MobilityInput | undefined = job.country
+    ? {
+        destinationCountry: job.country,
+        candidateCountry: user?.country,
+        workAuthorization: sameCountry ? "authorized" : job.visaSponsorship === "no" ? "sponsorship-required" : "unknown",
+        sponsorship: job.visaSponsorship ?? "unknown",
+        relocationAvailable: job.relocation === "available",
+      }
+    : undefined;
+
+  return {
+    compensation,
+    targetCurrency,
+    mobility,
+    employmentType: undefined,
+  };
+}
+
 function annualize(amount: number | undefined, period: SalaryPeriod = "annual") {
   if (amount === undefined || !Number.isFinite(amount)) return undefined;
   if (period === "monthly") return amount * 12;

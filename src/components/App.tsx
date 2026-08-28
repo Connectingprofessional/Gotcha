@@ -39,6 +39,7 @@ import { askGotcha } from "@/lib/ai";
 import { CvIntelligencePage } from "@/components/CvIntelligence";
 import { HuntModePage } from "@/components/HuntMode";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
+import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/global-opportunity-intelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
@@ -952,11 +953,14 @@ function RightRail() {
 function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const applyTo = useGotcha((s) => s.applyTo);
   const applied = useGotcha((s) => s.applications.some((a) => a.jobId === job.id));
+  const user = useSessionUser();
   const companyJobs = JOBS.filter((j) => j.company === job.company);
   const profile = deriveCompanyProfile(job.company, companyJobs);
   const health = companyHealth(profile);
   const healthLabel = { strong: "Strong hiring signal", stable: "Stable", watch: "Worth a closer look" }[health];
   const healthTone = { strong: "text-success", stable: "text-muted", watch: "text-warn" }[health];
+  const global = evaluateGlobalOpportunity(buildMobilityAndCompContext(job, user));
+  const showGlobalPanel = Boolean(job.country) && (job.country?.toLowerCase() !== user?.country?.toLowerCase());
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
@@ -998,6 +1002,61 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
             ))}
           </div>
         </div>
+
+        {showGlobalPanel && (
+          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-medium text-muted">Global mobility &amp; pay</p>
+              <span
+                className={cn(
+                  "text-xs font-medium",
+                  global.confidence === "high" ? "text-success" : global.confidence === "medium" ? "text-fg" : "text-muted",
+                )}
+              >
+                {global.confidence} confidence
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted">Work authorization / sponsorship</span>
+                <span
+                  className={cn(
+                    "font-medium",
+                    global.mobilityScore >= 75 ? "text-success" : global.mobilityScore >= 50 ? "text-fg" : "text-warn",
+                  )}
+                >
+                  {job.visaSponsorship === "yes" ? "Sponsorship offered" : job.visaSponsorship === "no" ? "No sponsorship" : "Not published"}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-muted">Relocation support</span>
+                <span className="font-medium text-fg">
+                  {job.relocation === "available" ? "Available" : job.relocation === "not_available" ? "Not offered" : "Not published"}
+                </span>
+              </div>
+              {global.salaryAnnualMin !== undefined || global.salaryAnnualMax !== undefined ? (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted">Compensation ({global.targetCurrency ?? job.currency})</span>
+                  <span className="font-medium text-fg">
+                    {[global.salaryAnnualMin, global.salaryAnnualMax].filter((v) => v !== undefined).map((v) => Math.round(v as number).toLocaleString()).join(" – ")}
+                  </span>
+                </div>
+              ) : null}
+              {global.reasons.map((r, i) => (
+                <div key={`reason-${i}`} className="flex items-start gap-1.5 text-xs text-success">
+                  <span aria-hidden>+</span>
+                  <span>{r}</span>
+                </div>
+              ))}
+              {global.warnings.map((w, i) => (
+                <div key={`warning-${i}`} className="flex items-start gap-1.5 text-xs text-muted">
+                  <span aria-hidden>i</span>
+                  <span>{w}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <button
           type="button"
