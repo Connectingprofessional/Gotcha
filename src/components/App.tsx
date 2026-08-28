@@ -43,7 +43,7 @@ import { HuntModePage } from "@/components/HuntMode";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/global-opportunity-intelligence";
 import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
-import { mapCandidateToRole } from "@/lib/market";
+import { mapCandidateToRole, localInterviewPack } from "@/lib/market";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
@@ -959,6 +959,7 @@ function RightRail() {
 function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
   const applyTo = useGotcha((s) => s.applyTo);
   const applied = useGotcha((s) => s.applications.some((a) => a.jobId === job.id));
+  const setView = useGotcha((s) => s.setView);
   const user = useSessionUser();
   const companyJobs = JOBS.filter((j) => j.company === job.company);
   const profile = deriveCompanyProfile(job.company, companyJobs);
@@ -974,6 +975,8 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
     userApprovalRequired: true,
   });
   const marketFit = mapCandidateToRole(user, job).filter((row) => row.dimension === "Compensation range" || row.dimension === "Experience" || row.dimension === "Grade level");
+  const interviewPack = localInterviewPack(user, job);
+  const prepQuestions = [interviewPack.role[0], interviewPack.behavioral[0], interviewPack.compensation[0]].filter(Boolean);
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center">
       <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border border-border bg-surface p-5">
@@ -1091,6 +1094,24 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
                   <p className="mt-0.5 text-[10px] text-subtle">Market: {row.market}</p>
                   <p className="mt-0.5 text-[10px] italic text-muted">{row.negotiate}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {prepQuestions.length > 0 && (
+          <div className="mt-3 rounded-xl border border-border bg-card p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-medium text-muted">Interview prep for this role</p>
+              <button type="button" onClick={() => setView("coach")} className="text-[10px] font-semibold text-primary-3 hover:underline">
+                Ask coach for more
+              </button>
+            </div>
+            <div className="space-y-2">
+              {prepQuestions.map((q, i) => (
+                <p key={i} className="text-xs leading-4 text-fg">
+                  <span className="text-muted">Q{i + 1}.</span> {q}
+                </p>
               ))}
             </div>
           </div>
