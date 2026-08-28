@@ -25,3 +25,31 @@ export const careerAgent = createServerFn({ method: "POST" })
     const body = (await res.json()) as { choices: { message: { content: string } }[] };
     return { ok: true as const, text: body.choices[0]?.message.content ?? "" };
   });
+
+const CV_SYSTEM =
+  "You are Gotcha CV Intelligence. Analyze a CV against a job description and respond ONLY in this exact structured format, nothing before or after it:\nSCORE: <integer 0-100>\nMATCHED: <comma-separated keywords found in both, max 8>\nMISSING: <comma-separated important JD keywords absent from the CV, max 8>\nSUGGESTIONS:\n- <rewritten bullet 1, specific and quantified>\n- <rewritten bullet 2>\n- <rewritten bullet 3>";
+
+export const cvAnalyze = createServerFn({ method: "POST" })
+  .validator((input: { cvText: string; jobText: string }) => input)
+  .handler(async ({ data }) => {
+    const apiKey = process.env.XAI_API_KEY;
+    if (!apiKey) return { ok: false as const, error: "AI is not available in this environment" };
+    const prompt = `CV:\n${data.cvText.slice(0, 4000)}\n\nJob description:\n${data.jobText.slice(0, 3000)}`;
+    const res = await fetch("https://api.x.ai/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "grok-4.5", max_tokens: 500, messages: [{ role: "system", content: CV_SYSTEM }, { role: "user", content: prompt }] }) });
+    if (!res.ok) return { ok: false as const, error: `xAI API error ${res.status}` };
+    const body = (await res.json()) as { choices: { message: { content: string } }[] };
+    return { ok: true as const, text: body.choices[0]?.message.content ?? "" };
+  });
+
+export const generateCoverLetter = createServerFn({ method: "POST" })
+  .validator((input: { cvText: string; jobText: string; jobTitle?: string; company?: string; tone?: string }) => input)
+  .handler(async ({ data }) => {
+    const apiKey = process.env.XAI_API_KEY;
+    if (!apiKey) return { ok: false as const, error: "AI is not available in this environment" };
+    const system = "You are Gotcha Cover Letter Writer. Write a concise, specific, non-generic cover letter (under 300 words) that connects the candidate's real CV experience to the job description. No placeholders like [Company Name] — use the details given. Plain prose, no markdown headers.";
+    const prompt = `CV:\n${data.cvText.slice(0, 4000)}\n\nJob (${data.jobTitle ?? "role"} at ${data.company ?? "the company"}):\n${data.jobText.slice(0, 3000)}\n\nTone: ${data.tone ?? "professional and confident"}`;
+    const res = await fetch("https://api.x.ai/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` }, body: JSON.stringify({ model: "grok-4.5", max_tokens: 500, messages: [{ role: "system", content: system }, { role: "user", content: prompt }] }) });
+    if (!res.ok) return { ok: false as const, error: `xAI API error ${res.status}` };
+    const body = (await res.json()) as { choices: { message: { content: string } }[] };
+    return { ok: true as const, text: body.choices[0]?.message.content ?? "" };
+  });

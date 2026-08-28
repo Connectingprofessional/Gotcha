@@ -31,10 +31,11 @@ import {
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, scoreMatch, type Job } from "@/lib/data";
+import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job } from "@/lib/data";
 import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
 import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
 import { askGotcha } from "@/lib/ai";
+import { CvIntelligencePage } from "@/components/CvIntelligence";
 import { authClient } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
@@ -222,7 +223,7 @@ export function App() {
               {view === "opportunities" && <OpportunitiesPage onOpenJob={setJob} />}
               {view === "applications" && <ApplicationsPage onOpenJob={setJob} />}
               {view === "coach" && <CoachPage />}
-              {view === "cv" && <CvPage />}
+              {view === "cv" && <CvIntelligencePage />}
               {view === "market" && <MarketPage />}
               {view === "learn" && <LearnPage />}
               {view === "saved" && <SavedPage />}
@@ -512,59 +513,6 @@ function CoachPage() {
           Send
         </button>
       </form>
-    </div>
-  );
-}
-
-function CvPage() {
-  const cvText = useGotcha((s) => s.cvText);
-  const setCvText = useGotcha((s) => s.setCvText);
-  const user = useSessionUser();
-  const [jd, setJd] = useState("");
-  const [result, setResult] = useState("");
-  const [busy, setBusy] = useState(false);
-  const sample = JOBS[0];
-  const score = sample ? scoreMatch(sample, user?.skills ?? [], user?.title ?? "", "FinTech") : 87;
-
-  async function analyze() {
-    setBusy(true);
-    const res = await askGotcha({
-      data: {
-        prompt: `Score this CV against the JD. Give match %, 5 missing keywords, and 3 rewrite bullets.\n\nCV:\n${cvText || user?.about}\n\nJD:\n${jd || sample?.description}`,
-        system: "You are Gotcha CV Intelligence. Be specific and terse.",
-      },
-    });
-    setBusy(false);
-    setResult(res.ok ? res.text : res.error);
-  }
-
-  return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">CV Intelligence</h1>
-      <div className="grid gap-3 md:grid-cols-2">
-        <textarea
-          value={cvText}
-          onChange={(e) => setCvText(e.target.value)}
-          placeholder="Paste your CV…"
-          rows={10}
-          className="rounded-xl border border-border bg-card p-3 text-sm outline-none"
-        />
-        <textarea
-          value={jd}
-          onChange={(e) => setJd(e.target.value)}
-          placeholder="Paste a job description…"
-          rows={10}
-          className="rounded-xl border border-border bg-card p-3 text-sm outline-none"
-        />
-      </div>
-      <button type="button" onClick={analyze} disabled={busy} className="rounded-md bg-primary px-4 py-2 text-sm font-medium">
-        {busy ? "Analyzing…" : "Analyze Match"}
-      </button>
-      <div className="rounded-xl border border-border bg-card p-4">
-        <p className="text-sm text-muted">Baseline ATS score vs top FinTech PM role</p>
-        <p className="text-3xl font-semibold tabular text-success">{score}%</p>
-        {result && <pre className="mt-3 whitespace-pre-wrap text-xs text-muted">{result}</pre>}
-      </div>
     </div>
   );
 }
