@@ -1,3 +1,4 @@
+// src/routes/api/auth/$.ts
 import { createFileRoute } from "@tanstack/react-router";
 import { auth } from "@/lib/auth/server";
 
