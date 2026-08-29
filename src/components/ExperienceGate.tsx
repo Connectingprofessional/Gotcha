@@ -2,13 +2,12 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, Play, Sparkles } from "lucide-react";
 import { App } from "@/components/App";
 import { useGotcha } from "@/lib/store";
-import { authClient, signIn } from "@/lib/auth/client";
-import { GROK_PROVIDERS } from "@/lib/auth/providers";
+import { authClient } from "@/lib/auth/client";
 
 export function ExperienceGate() {
   const sessionEmail = useGotcha((s) => s.sessionEmail);
   const hydrateFromAuth = useGotcha((s) => s.hydrateFromAuth);
-  const { data: authSession, isPending: authPending } = authClient.useSession();
+  const { data: authSession } = authClient.useSession();
   const [entered, setEntered] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [email, setEmail] = useState("");
@@ -24,11 +23,7 @@ export function ExperienceGate() {
     }
   }, [authSession, sessionEmail, hydrateFromAuth]);
 
-  // NEVER bypass the public landing page on initial load, even when a previous
-  // browser session exists. The user must explicitly press ENTER first.
   if (!entered) return <Landing onEnter={() => setEntered(true)} />;
-
-  // Once the user has explicitly entered, restore a genuine Better Auth session.
   if (authSession?.user?.email) return <App />;
 
   async function submit(e: FormEvent) {
@@ -40,23 +35,34 @@ export function ExperienceGate() {
       if (registering) {
         const { data, error: signUpError } = await authClient.signUp.email({
           name: name.trim(),
-          email: email.trim(),
+          email: email.trim().toLowerCase(),
           password,
           callbackURL: "/",
         });
         if (signUpError) throw new Error(signUpError.message ?? "Unable to create account");
-        if (data?.user?.email) hydrateFromAuth(data.user.email, data.user.name ?? name.trim());
-      } else {
-        const { data, error: signInError } = await authClient.signIn.email({ email: email.trim(), password });
-        if (signInError) throw new Error(signInError.message ?? "Unable to sign in");
-        if (data?.user?.email) {
-          hydrateFromAuth(data.user.email, data.user.name ?? "");
-        } else {
-          const refreshed = await authClient.getSession();
-          if (!refreshed.data?.user?.email) throw new Error("Sign-in succeeded but no session was returned. Please try again.");
-          hydrateFromAuth(refreshed.data.user.email, refreshed.data.user.name ?? "");
-        }
+        if (!data?.user?.email) throw new Error("Account creation did not return a user session.");
+        hydrateFromAuth(data.user.email, data.user.name ?? name.trim());
+        window.location.assign("/");
+        return;
       }
+
+      const { data, error: signInError } = await authClient.signIn.email({
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (signInError) throw new Error(signInError.message ?? "Invalid email or password");
+      if (!data?.user?.email) {
+        const refreshed = await authClient.getSession();
+        if (!refreshed.data?.user?.email) {
+          throw new Error("Sign-in completed but no session was returned. Please try again.");
+        }
+        hydrateFromAuth(refreshed.data.user.email, refreshed.data.user.name ?? "");
+      } else {
+        hydrateFromAuth(data.user.email, data.user.name ?? "");
+      }
+      // Force a clean application request so the new Better Auth cookie is read
+      // by the server and the dashboard is rendered from the authenticated session.
+      window.location.assign("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
@@ -69,8 +75,18 @@ export function ExperienceGate() {
     setError("");
     setBusy(true);
     try {
-      const provider = GROK_PROVIDERS.find((p) => p.idp === "google") ?? GROK_PROVIDERS[0];
-      await signIn(provider.providerId, { callbackURL: "/" });
+      // Use Better Auth's native Google provider so the user gets the normal
+      // Google/Gmail account chooser rather than the shared Grok broker.
+      const { data, error: googleError } = await authClient.signIn.social({
+        provider: "google",
+        callbackURL: "/",
+      });
+      if (googleError) throw new Error(googleError.message ?? "Google sign-in failed");
+      if (data?.url) {
+        window.location.assign(data.url);
+        return;
+      }
+      throw new Error("Google sign-in did not return an authorization URL.");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
@@ -91,7 +107,7 @@ export function ExperienceGate() {
             <div className="mx-auto w-full max-w-[390px]">
               <div className="mb-9 lg:hidden"><p className="text-[10px] font-bold uppercase tracking-[.28em] text-primary-3">Experience Gotcha</p><p className="mt-2 text-sm text-muted">before you get started</p></div>
               <div className="mb-8"><div className="mb-5 flex size-11 items-center justify-center rounded-xl bg-primary/10"><Sparkles className="size-5 text-primary-3" /></div><h1 className="text-3xl font-semibold tracking-tight">{registering ? "Create your account" : "Welcome Back!"}</h1><p className="mt-2 text-sm text-muted">{registering ? "Start your intelligent career hunt" : "Sign in to continue"}</p></div>
-              <button type="button" disabled={busy || authPending} onClick={google} className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold hover:border-primary/50 disabled:opacity-50"><span className="grid size-5 place-items-center rounded-full bg-white text-[11px] font-bold text-slate-700">G</span>Continue with Google</button>
+              <button type="button" disabled={busy} onClick={google} className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-semibold hover:border-primary/50 disabled:opacity-50"><span className="grid size-5 place-items-center rounded-full bg-white text-[11px] font-bold text-slate-700">G</span>Continue with Google</button>
               <div className="my-6 flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="text-[10px] uppercase tracking-[.18em] text-subtle">or</span><span className="h-px flex-1 bg-border" /></div>
               <form onSubmit={submit} className="space-y-4">
                 {registering && <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Full name</span><input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:border-primary" placeholder="Your name" /></label>}
@@ -99,7 +115,7 @@ export function ExperienceGate() {
                 <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Password</span><span className="relative block"><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 pr-11 text-sm outline-none focus:border-primary" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"><span className="sr-only">Toggle password visibility</span>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></span></label>
                 {!registering && <div className="flex justify-end"><button type="button" className="text-xs font-medium text-primary-3 hover:text-fg">Forgot Password?</button></div>}
                 {error && <p className="rounded-lg border border-red-400/20 bg-red-400/5 px-3 py-2 text-xs text-red-300">{error}</p>}
-                <button type="submit" disabled={busy || authPending} className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold tracking-wide disabled:opacity-50">{busy ? "PLEASE WAIT..." : registering ? "CREATE ACCOUNT" : "SIGN IN"}</button>
+                <button type="submit" disabled={busy} className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold tracking-wide disabled:opacity-50">{busy ? "PLEASE WAIT..." : registering ? "CREATE ACCOUNT" : "SIGN IN"}</button>
               </form>
               <div className="mt-7 text-center text-xs text-muted">{registering ? "Already have an account?" : "New to Gotcha?"} <button type="button" onClick={() => { setRegistering((v) => !v); setError(""); }} className="font-semibold text-primary-3">{registering ? "Sign in" : "Create account"}</button></div>
             </div>
