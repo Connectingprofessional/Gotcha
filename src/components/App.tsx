@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
-import { useGotcha, useSessionUser, type ViewId } from "@/lib/store";
+import { useGotcha, useSessionUser, type ViewId, type User } from "@/lib/store";
 import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
 import { GlobalCareerModules } from "@/components/GlobalCareerModules";
 import { askGotcha } from "@/lib/ai";
@@ -43,6 +43,8 @@ import { HuntModePage } from "@/components/HuntMode";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/global-opportunity-intelligence";
 import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
+import { matchOpportunity, type CareerProfile } from "@/lib/career/opportunity-matcher.ts";
+import type { OpportunityRecord } from "@/lib/career/opportunity-normalizer.ts";
 import { mapCandidateToRole, localInterviewPack } from "@/lib/market";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, buildFunnel, compareSources, compareCvVersions, type CareerApplication } from "@/lib/careerSuite";
@@ -305,6 +307,50 @@ export function App() {
   );
 }
 
+
+/**
+ * Maps a Job to the shape the explainable opportunity-matcher expects.
+ * Job has no seniority/experience-band fields in this app's data model, so
+ * those simply stay undefined — the matcher already treats missing data as
+ * neutral (50) rather than penalizing it.
+ */
+function toOpportunityRecord(job: Job): OpportunityRecord {
+  return {
+    sourceId: job.id,
+    title: job.title,
+    company: job.company,
+    location: job.location,
+    country: job.country,
+    industry: job.industry,
+    skills: job.tags,
+    remote: job.work === "Remote",
+    salaryMin: job.salaryMin,
+    salaryMax: job.salaryMax,
+    salaryCurrency: job.currency,
+    visaSponsorshipAvailable: job.visaSponsorship === "yes" ? true : job.visaSponsorship === "no" ? false : undefined,
+  };
+}
+
+/**
+ * Maps the signed-in User to a CareerProfile. compMin/compMax are stored in
+ * lakhs (INR) or thousands (USD) — see market.ts's formatComp, which labels
+ * them "LPA" / "K" — while Job.salaryMin/Max are raw absolute figures, so
+ * the multiplier here converts to the same scale before comparing.
+ */
+function toCareerProfile(user: User | null, job: Job): CareerProfile {
+  const currency = user?.currency ?? "INR";
+  const minSalary = user?.compMin != null ? user.compMin * (currency === "INR" ? 100_000 : 1_000) : undefined;
+  return {
+    skills: user?.skills,
+    titles: user?.targetRoles,
+    countries: user?.targetCountries,
+    remotePreference: user?.remotePreference === "Remote" ? "remote_only" : user?.remotePreference === "Hybrid" ? "remote_preferred" : "any",
+    minSalary,
+    salaryCurrency: currency,
+    experienceYears: user?.experienceYears,
+    needsVisaSponsorship: Boolean(job.country && user?.country && job.country.toLowerCase() !== user.country.toLowerCase()),
+  };
+}
 
 function filterJobs(role: string, fn: string, industry: string, location: string) {
   return JOBS.filter((j) => {
@@ -1027,6 +1073,7 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
     applicationUrl: "in-app-apply",
     userApprovalRequired: true,
   });
+  const explainableMatch = matchOpportunity(toCareerProfile(user, job), toOpportunityRecord(job));
   const marketFit = mapCandidateToRole(user, job).filter((row) => row.dimension === "Compensation range" || row.dimension === "Experience" || row.dimension === "Grade level");
   const interviewPack = localInterviewPack(user, job);
   const prepQuestions = [interviewPack.role[0], interviewPack.behavioral[0], interviewPack.compensation[0]].filter(Boolean);
@@ -1187,6 +1234,16 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
                 {automation.recommendation === "apply" ? "AI agent: strong match — apply now" : automation.recommendation === "review" ? "AI agent: worth a closer look" : "AI agent: likely not a fit"}
               </p>
               <p className="mt-0.5 text-muted">{automation.reasons[0]}</p>
+              {(explainableMatch.reasons.length > 0 || explainableMatch.gaps.length > 0) && (
+                <ul className="mt-1.5 space-y-0.5">
+                  {explainableMatch.reasons.slice(0, 2).map((r, i) => (
+                    <li key={`r-${i}`} className="text-[10px] text-success">+ {r}</li>
+                  ))}
+                  {explainableMatch.gaps.slice(0, 2).map((g, i) => (
+                    <li key={`g-${i}`} className="text-[10px] text-muted">− {g}</li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         )}
