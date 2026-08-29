@@ -84,6 +84,13 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Sidebar: keep the AI assistant immediately below Profile instead of pinning it to the bottom. */
+  aside > nav {
+    flex: 0 1 auto !important;
+    min-height: 0;
+    overflow-y: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
