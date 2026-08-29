@@ -43,8 +43,9 @@ import { GlobalCareerModules } from "@/components/GlobalCareerModules";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
-import { authClient } from "@/lib/auth/client";
+import { authClient, signIn as brokerSignIn, signOut as brokerSignOut, GROK_PROVIDERS } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
+import { provisionDemoUser, DEMO_EMAIL } from "@/lib/auth/bootstrap-demo";
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -811,9 +812,8 @@ function RightRail() {
   const [name, setName] = useState("");
   const [show, setShow] = useState(false);
   const [err, setErr] = useState("");
-  const login = useGotcha((s) => s.login);
-  const register = useGotcha((s) => s.register);
   const logout = useGotcha((s) => s.logout);
+  const [busy, setBusy] = useState(false);
 
   return (
     <aside className="space-y-4">
@@ -851,27 +851,51 @@ function RightRail() {
             <p className="mt-1 text-xs text-muted">{user.name}</p>
             <p className="text-xs text-subtle">{user.email}</p>
             <p className="mt-3 text-sm">{user.title}</p>
-            <button type="button" onClick={logout} className="mt-4 w-full rounded-md border border-border py-2 text-sm">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  await brokerSignOut();
+                  // On success this navigates away; clear the persisted local
+                  // view state right before that happens.
+                  logout();
+                } catch {
+                  // Deployed sessions ride an HttpOnly cookie only the server can
+                  // clear — a failed/timed-out request means it's still live, so
+                  // don't clear the local view and claim signed-out falsely.
+                  // The visitor can just press the button again.
+                }
+              }}
+              className="mt-4 w-full rounded-md border border-border py-2 text-sm"
+            >
               Sign out
             </button>
           </div>
         ) : (
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              const res =
-                mode === "signin"
-                  ? login(email, password)
-                  : register({
-                      name,
-                      email,
-                      password,
-                      title: "Product Manager",
-                      location: "India / Remote",
-                      about: "",
-                      skills: [],
-                    });
-              setErr(res.ok ? "" : res.error ?? "Failed");
+              setErr("");
+              setBusy(true);
+              try {
+                if (mode === "signup") {
+                  const { error } = await authClient.signUp.email({ email, password, name });
+                  if (error) setErr(error.message ?? "Sign-up failed");
+                  // On success authClient.useSession() picks up the new session and
+                  // the App-level bridge (hydrateFromAuth) routes to the dashboard.
+                  return;
+                }
+                let { error } = await authClient.signIn.email({ email, password });
+                if (error && email.trim().toLowerCase() === DEMO_EMAIL) {
+                  // Public demo credentials — provision the account on the real
+                  // backend the first time anyone signs in with them, then retry.
+                  await provisionDemoUser();
+                  ({ error } = await authClient.signIn.email({ email, password }));
+                }
+                if (error) setErr(error.message ?? "Invalid email or password");
+              } finally {
+                setBusy(false);
+              }
             }}
             className="space-y-3"
           >
@@ -888,7 +912,7 @@ function RightRail() {
                 />
               </label>
             )}
-            <GoogleSignInButton callbackURL="/" />
+            <SocialSignInButtons callbackURL="/" />
             <div className="flex items-center gap-2 py-1 text-[10px] uppercase tracking-wider text-muted">
               <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
             </div>
@@ -923,8 +947,13 @@ function RightRail() {
               </button>
             )}
             {err && <p className="text-xs text-danger">{err}</p>}
-            <button type="submit" className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold glow-primary">
-              {mode === "signin" ? "SIGN IN" : "CREATE PROFILE"} <ArrowRight className="size-4" />
+            <button
+              type="submit"
+              disabled={busy}
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold glow-primary disabled:opacity-60"
+            >
+              {busy ? "Please wait…" : mode === "signin" ? "SIGN IN" : "CREATE PROFILE"}{" "}
+              <ArrowRight className="size-4" />
             </button>
             {mode === "signin" ? (
               <div>
@@ -1062,39 +1091,52 @@ function DemoModal() {
   );
 }
 
-function GoogleSignInButton({ callbackURL }: { callbackURL: string }) {
-  const [busy, setBusy] = useState(false);
+function GoogleGlyph() {
+  return (
+    <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z" />
+      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.73-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.11A12 12 0 0 0 12 24Z" />
+      <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.27A12 12 0 0 0 0 12c0 1.94.46 3.77 1.27 5.39l4-3.11Z" />
+      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0A12 12 0 0 0 1.27 6.61l4 3.11C6.22 6.86 8.87 4.75 12 4.75Z" />
+    </svg>
+  );
+}
+
+/**
+ * One button per upstream in `GROK_PROVIDERS`, signing in through the shared
+ * Grok auth broker (`@/lib/auth/client`'s `signIn`) — the path that's actually
+ * pre-wired with real credentials in live preview AND when deployed, unlike
+ * a native `socialProviders` entry which needs this app's own client id/secret
+ * set as env vars. See `providers.ts` to add an upstream once the broker
+ * supports it.
+ */
+function SocialSignInButtons({ callbackURL }: { callbackURL: string }) {
+  const [pending, setPending] = useState<string | null>(null);
   const [err, setErr] = useState("");
   return (
-    <div>
-      <button
-        type="button"
-        disabled={busy}
-        onClick={async () => {
-          setErr("");
-          setBusy(true);
-          try {
-            const { error } = await authClient.signIn.social({
-              provider: "google",
-              callbackURL,
-            });
-            if (error) setErr(error.message ?? "Google sign-in failed");
-          } catch {
-            setErr("Google sign-in is not configured on this deployment yet.");
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium"
-      >
-        <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z" />
-          <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.73-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.11A12 12 0 0 0 12 24Z" />
-          <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.27A12 12 0 0 0 0 12c0 1.94.46 3.77 1.27 5.39l4-3.11Z" />
-          <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0A12 12 0 0 0 1.27 6.61l4 3.11C6.22 6.86 8.87 4.75 12 4.75Z" />
-        </svg>
-        {busy ? "Redirecting…" : "Continue with Google"}
-      </button>
+    <div className="space-y-2">
+      {GROK_PROVIDERS.map((p) => (
+        <button
+          key={p.providerId}
+          type="button"
+          disabled={pending !== null}
+          onClick={async () => {
+            setErr("");
+            setPending(p.providerId);
+            try {
+              await brokerSignIn(p.providerId, { callbackURL });
+            } catch (e) {
+              setErr(e instanceof Error ? e.message : "Sign-in failed");
+            } finally {
+              setPending(null);
+            }
+          }}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium disabled:opacity-60"
+        >
+          {p.idp === "google" ? <GoogleGlyph /> : <Twitter className="size-4" />}
+          {pending === p.providerId ? "Redirecting…" : `Continue with ${p.label}`}
+        </button>
+      ))}
       {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
     </div>
   );
@@ -1119,7 +1161,7 @@ function AdminGate() {
             <X className="size-4" />
           </button>
         </div>
-        <GoogleSignInButton callbackURL="/?authIntent=admin" />
+        <SocialSignInButtons callbackURL="/?authIntent=admin" />
         <div className="my-2 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">
           <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
         </div>
