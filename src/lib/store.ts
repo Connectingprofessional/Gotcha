@@ -4,7 +4,7 @@ import type { Application, SavedSearch } from "./data";
 import { createCareerEvent, type CareerEvent, type CareerEventType } from "./careerEvents";
 import type { GlobalOpportunityContext } from "./global-opportunity-intelligence";
 
-export type ViewId = "dashboard" | "search" | "opportunities" | "applications" | "coach" | "cv" | "hunt" | "market" | "learn" | "saved" | "profile" | "admin";
+export type ViewId = "dashboard" | "search" | "opportunities" | "applications" | "coach" | "cv" | "hunt" | "network" | "market" | "learn" | "saved" | "profile" | "admin";
 export type User = { name: string; email: string; password: string; title: string; location: string; about: string; skills: string[]; isAdmin?: boolean; targetRoles?: string[]; targetCountries?: string[]; salaryGoal?: string; remotePreference?: "Remote" | "Hybrid" | "On-site" | "Any"; careerGoal?: string; visaStatus?: string; languages?: string[]; certifications?: string[]; achievements?: string[]; blockedCompanies?: string[]; recruiterVisibility?: "visible" | "anonymous" | "hidden"; stealthMode?: boolean; gradeLevel?: string; experienceYears?: number; functionArea?: string; geography?: string; region?: string; country?: string; currency?: "INR" | "USD"; compMin?: number; compMax?: number; globalProfile?: GlobalOpportunityContext };
 type Filters = { role: string; function: string; industry: string; location: string };
 type CareerSignal = { id: string; title: string; description: string; priority: "high" | "medium" | "low"; createdAt: string };

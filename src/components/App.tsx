@@ -30,6 +30,7 @@ import {
   ChevronRight,
   LogOut,
   Crosshair,
+  Handshake,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
@@ -38,6 +39,7 @@ import { GotchaCareerDashboard } from "@/components/GotchaCareerDashboard";
 import { askGotcha } from "@/lib/ai";
 import { CvIntelligencePage } from "@/components/CvIntelligence";
 import { HuntModePage } from "@/components/HuntMode";
+import { GlobalCareerModules } from "@/components/GlobalCareerModules";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
@@ -52,6 +54,7 @@ const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean
   { id: "coach", label: "AI Career Coach", icon: Sparkles },
   { id: "cv", label: "CV Intelligence", icon: FileText },
   { id: "hunt", label: "Hunt Mode", icon: Crosshair },
+  { id: "network", label: "Network & Privacy", icon: Handshake },
   { id: "market", label: "Market Insights", icon: LineChart },
   { id: "learn", label: "Learning Center", icon: GraduationCap },
   { id: "saved", label: "Saved Searches", icon: Bookmark },
@@ -236,6 +239,7 @@ export function App() {
               {view === "coach" && <CoachPage />}
               {view === "cv" && <CvIntelligencePage />}
               {view === "hunt" && <HuntModePage />}
+              {view === "network" && <GlobalCareerModules />}
               {view === "market" && <MarketPage />}
               {view === "learn" && <LearnPage />}
               {view === "saved" && <SavedPage />}
