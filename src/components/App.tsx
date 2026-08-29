@@ -45,7 +45,7 @@ import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/gl
 import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
 import { mapCandidateToRole, localInterviewPack } from "@/lib/market";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
-import { buildAgeingInsights, buildFunnel, compareSources, type CareerApplication } from "@/lib/careerSuite";
+import { buildAgeingInsights, buildFunnel, compareSources, compareCvVersions, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
@@ -461,6 +461,7 @@ function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
   const ageing = buildAgeingInsights(careerApps).filter((i) => i.severity !== "normal");
   const funnel = buildFunnel(careerApps).filter((f) => f.count > 0);
   const sources = compareSources(careerApps);
+  const cvPerformance = compareCvVersions(careerApps);
 
   return (
     <div className="space-y-3">
@@ -516,6 +517,21 @@ function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
                     <span className="text-muted">{s.source}</span>
                     <span className="font-medium">
                       {s.applications} applied · {s.responseRate}% response
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {cvPerformance.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4 sm:col-span-2">
+              <p className="mb-2 text-sm font-medium">CV variant performance</p>
+              <div className="space-y-1.5">
+                {cvPerformance.map((c) => (
+                  <div key={c.cvVersion} className="flex items-center justify-between text-xs">
+                    <span className="text-muted">{c.cvVersion}</span>
+                    <span className="font-medium">
+                      {c.applications} applied · {c.responseRate}% response · {c.interviewRate}% interview
                     </span>
                   </div>
                 ))}
