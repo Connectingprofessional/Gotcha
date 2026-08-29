@@ -24,6 +24,9 @@ import {
   LogOut,
   Crosshair,
   Handshake,
+  Wand2,
+  Bell,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
@@ -36,6 +39,7 @@ import { GlobalCareerModules } from "@/components/GlobalCareerModules";
 import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
+import { scoreOpportunity } from "@/lib/careerIntelligence";
 import { authClient, signIn as brokerSignIn, signOut as brokerSignOut, GROK_PROVIDERS } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
@@ -215,6 +219,8 @@ export function App() {
               >
                 <Settings className="size-4" />
               </button>
+              {user && <AssistantButton />}
+              {user && <NotificationBell />}
               {user && <AccountMenu user={user} />}
             </div>
           </header>
@@ -786,6 +792,231 @@ function AdminPage() {
           </li>
         ))}
       </ul>
+    </div>
+  );
+}
+
+function AssistantButton() {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<{ role: "user" | "bot"; text: string }[]>([
+    { role: "bot", text: "Hi — I'm your Gotcha AI Assistant. Ask me about jobs, your CV, applications, or interview prep." },
+  ]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function send() {
+    const text = input.trim();
+    if (!text || busy) return;
+    setInput("");
+    setMessages((m) => [...m, { role: "user", text }]);
+    setBusy(true);
+    const res = await askGotcha({ data: { prompt: text } });
+    setBusy(false);
+    setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted hover:text-fg"
+      >
+        <Wand2 className="size-3.5" />
+        <span className="hidden sm:inline">AI Assistant</span>
+      </button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-bg/70 p-4 md:items-center" onClick={() => setOpen(false)}>
+          <div
+            className="flex h-[70vh] w-full max-w-md flex-col overflow-hidden rounded-xl border border-border bg-surface"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-semibold">
+                <Wand2 className="size-4 text-primary-3" /> AI Assistant
+              </div>
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="text-muted hover:text-fg">
+                <X className="size-4" />
+              </button>
+            </div>
+            <div className="flex-1 space-y-3 overflow-y-auto p-4">
+              {messages.map((m, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "max-w-[85%] rounded-lg px-3 py-2 text-sm",
+                    m.role === "bot" ? "bg-bg text-muted" : "ml-auto bg-primary/25 text-fg",
+                  )}
+                >
+                  {m.text}
+                </div>
+              ))}
+              {busy && <div className="max-w-[85%] rounded-lg bg-bg px-3 py-2 text-sm text-muted">Thinking…</div>}
+            </div>
+            <form
+              className="flex gap-2 border-t border-border p-3"
+              onSubmit={(e) => {
+                e.preventDefault();
+                void send();
+              }}
+            >
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Ask me anything about your job search…"
+                className="flex-1 rounded-md border border-border bg-input px-3 py-2 text-sm outline-none"
+              />
+              <button
+                type="submit"
+                disabled={busy}
+                aria-label="Send"
+                className="flex items-center justify-center rounded-md bg-primary px-3 py-2 text-sm font-medium disabled:opacity-60"
+              >
+                <Send className="size-4" />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+type NotificationItem = { id: string; category: "New job" | "CV feedback" | "Employer" | "Interview"; text: string; at: string };
+
+function buildNotifications(
+  user: ReturnType<typeof useSessionUser>,
+  applications: Application[],
+  careerEvents: { id: string; type: string; occurredAt: string; entityId?: string; metadata: Record<string, string | number | boolean | null> }[],
+  cvVariants: { id: string; atsScore?: number; createdAt: string }[],
+): NotificationItem[] {
+  const items: NotificationItem[] = [];
+  const jobById = (id?: string) => JOBS.find((j) => j.id === id);
+
+  if (user) {
+    const appliedOrSaved = new Set(applications.map((a) => a.jobId));
+    [...JOBS]
+      .map((job) => ({ job, score: scoreOpportunity(job, user).overall }))
+      .filter((m) => !appliedOrSaved.has(m.job.id))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 2)
+      .forEach((m) => {
+        items.push({
+          id: `job-${m.job.id}`,
+          category: "New job",
+          text: `New match: ${m.job.title} at ${m.job.company} — ${m.score}% fit`,
+          at: m.job.posted,
+        });
+      });
+  }
+
+  careerEvents
+    .filter((e) => e.type === "interview.scheduled" || e.type === "interview.outcome" || e.type === "offer.received")
+    .slice(0, 5)
+    .forEach((e) => {
+      const job = jobById(e.entityId);
+      const label =
+        e.type === "interview.scheduled"
+          ? `Interview scheduled${job ? ` for ${job.title} at ${job.company}` : ""}`
+          : e.type === "interview.outcome"
+            ? `Interview update${job ? ` for ${job.title} at ${job.company}` : ""}`
+            : `Offer received${job ? ` from ${job.company}` : ""}`;
+      items.push({ id: e.id, category: "Interview", text: label, at: e.occurredAt });
+    });
+
+  careerEvents
+    .filter((e) => e.type === "application.status_changed" && (e.metadata.to === "interview" || e.metadata.to === "offer" || e.metadata.to === "rejected"))
+    .slice(0, 5)
+    .forEach((e) => {
+      const job = jobById(e.entityId);
+      items.push({
+        id: e.id,
+        category: "Employer",
+        text: `${job ? job.company : "An employer"} moved your application${job ? ` for ${job.title}` : ""} to "${e.metadata.to}"`,
+        at: e.occurredAt,
+      });
+    });
+
+  [...cvVariants]
+    .filter((v) => typeof v.atsScore === "number")
+    .sort((a, b) => (b.createdAt > a.createdAt ? 1 : -1))
+    .slice(0, 2)
+    .forEach((v) => {
+      items.push({ id: `cv-${v.id}`, category: "CV feedback", text: `Your CV scored ${v.atsScore}% ATS match`, at: v.createdAt });
+    });
+
+  return items.sort((a, b) => (a.at < b.at ? 1 : -1)).slice(0, 12);
+}
+
+function NotificationBell() {
+  const [open, setOpen] = useState(false);
+  const user = useSessionUser();
+  const applications = useGotcha((s) => s.applications);
+  const careerEvents = useGotcha((s) => s.careerEvents);
+  const cvVariants = useGotcha((s) => s.cvVariants);
+  const setView = useGotcha((s) => s.setView);
+  const items = useMemo(
+    () => buildNotifications(user, applications, careerEvents, cvVariants),
+    [user, applications, careerEvents, cvVariants],
+  );
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
+
+  const categoryView: Record<NotificationItem["category"], ViewId> = {
+    "New job": "search",
+    "CV feedback": "cv",
+    Employer: "applications",
+    Interview: "applications",
+  };
+
+  return (
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="relative rounded-full border border-border p-2 text-muted hover:text-fg"
+        aria-label="Notifications"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <Bell className="size-4" />
+        {items.length > 0 && (
+          <span className="absolute -right-1 -top-1 flex size-4 items-center justify-center rounded-full bg-danger text-[10px] font-semibold text-fg">
+            {items.length > 9 ? "9+" : items.length}
+          </span>
+        )}
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 max-h-96 w-80 overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-2xl"
+        >
+          <div className="border-b border-border px-3 py-2.5 text-sm font-semibold">Notifications</div>
+          {items.length === 0 ? (
+            <p className="px-3 py-4 text-xs text-muted">You're all caught up — no updates yet.</p>
+          ) : (
+            items.map((n) => (
+              <button
+                key={n.id}
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setView(categoryView[n.category]);
+                }}
+                className="flex w-full flex-col items-start gap-0.5 rounded-lg px-3 py-2 text-left hover:bg-surface"
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-primary-3">{n.category}</span>
+                <span className="text-xs text-fg">{n.text}</span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
     </div>
   );
 }
