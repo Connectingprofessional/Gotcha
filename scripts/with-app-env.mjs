@@ -111,7 +111,9 @@ function main(argv) {
     process.exit(2);
   }
   const env = mergeAppEnv(readAppEnv(projectRoot()), process.env);
-  const child = spawn(command, args, { stdio: "inherit", env });
+  // Windows needs a shell to resolve npm's `.cmd` shims (vite, tsc, etc.) —
+  // `spawn` without it throws ENOENT there even though the binary exists.
+  const child = spawn(command, args, { stdio: "inherit", env, shell: process.platform === "win32" });
   // The dev server is long-running and is stopped by signalling this wrapper.
   for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"]) {
     process.on(signal, () => child.kill(signal));
