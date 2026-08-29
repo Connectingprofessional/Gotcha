@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { annualizeCompensation, convertAnnualCompensation, workingHourOverlap } from "./global-compensation";
+import { annualizeCompensation, convertAnnualCompensation, workingHourOverlap } from "./global-compensation.ts";
 
 test("annualizes monthly employer compensation without losing source values", () => {
   const result = annualizeCompensation({ min: 10000, max: 15000, currency: "AED", period: "month", bonusMin: 10000 });
@@ -28,6 +28,10 @@ test("rejects an FX quote with the wrong currency direction", () => {
 });
 
 test("calculates working-hour overlap from IANA time zones", () => {
+  // 15 Jan 2026: IST is UTC+5:30 (no DST); London is GMT/UTC+0 in January
+  // (British Summer Time doesn't start until spring). A 9am-6pm workday in
+  // each zone is 3:30am-12:30pm UTC for India and 9am-6pm UTC for London —
+  // the overlap is 9am-12:30pm UTC, i.e. 3.5 hours.
   const overlap = workingHourOverlap("Asia/Kolkata", "Europe/London", 9, 18, 9, 18, new Date("2026-01-15T12:00:00Z"));
-  assert.equal(overlap, 4.5);
+  assert.equal(overlap, 3.5);
 });

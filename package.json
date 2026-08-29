@@ -18,7 +18,7 @@
     "deploy": "npm run build && npx nitro deploy --prebuilt",
     "typecheck": "tsc --noEmit",
     "check:auth": "node scripts/check-auth-invariant.mjs",
-    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/auth/gate-identity.test.ts src/lib/career/opportunity-normalizer.test.ts src/lib/career/opportunity-matcher.test.ts src/lib/career/career-automation.test.ts src/lib/career/cv-analysis.test.ts src/lib/global-opportunity-intelligence.test.ts src/lib/career-agent.test.ts",
+    "test": "node --test 'scripts/**/*.test.mjs' && node --experimental-strip-types --test src/lib/app-data/app-data.test.ts src/lib/auth/gate-identity.test.ts src/lib/career/opportunity-normalizer.test.ts src/lib/career/opportunity-matcher.test.ts src/lib/career/career-automation.test.ts src/lib/career/global-compensation.test.ts src/lib/career/cv-analysis.test.ts src/lib/global-opportunity-intelligence.test.ts src/lib/career-agent.test.ts",
     "lint": "eslint .",
     "format": "prettier --write ."
   },
