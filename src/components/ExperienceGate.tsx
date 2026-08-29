@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, Play, Sparkles } from "lucide-react";
 import { App } from "@/components/App";
 import { useGotcha } from "@/lib/store";
-import { authClient, signIn as signInWithBroker } from "@/lib/auth/client";
+import { authClient } from "@/lib/auth/client";
 
 export function ExperienceGate() {
   const sessionEmail = useGotcha((s) => s.sessionEmail);
@@ -68,19 +68,17 @@ export function ExperienceGate() {
     }
   }
 
-  async function google() {
-    if (busy) return;
-    setError("");
-    setBusy(true);
-    try {
-      // Google is federated through the configured Grok OAuth broker in this app.
-      // Do not call Better Auth's native /sign-in/social endpoint here.
-      await signInWithBroker("grok-google", { callbackURL: "/", errorCallbackURL: "/" });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Google sign-in failed");
-      setBusy(false);
-    }
+ async function google() {
+  if (busy) return;
+  setError("");
+  setBusy(true);
+  try {
+    await authClient.signIn.social({ provider: "google", callbackURL: "/", errorCallbackURL: "/" });
+  } catch (err) {
+    setError(err instanceof Error ? err.message : "Google sign-in failed");
+    setBusy(false);
   }
+}
 
   return (
     <div className="gotecha-grid min-h-dvh bg-bg text-fg">
