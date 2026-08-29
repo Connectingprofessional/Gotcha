@@ -51,7 +51,16 @@ function Login() {
         ) : (
           <>
             <div className="space-y-2">
-              {GROK_PROVIDERS.map((p) => (
+              <button
+                type="button"
+                onClick={() =>
+                  authClient.signIn.social({ provider: "google", callbackURL: "/" })
+                }
+                className="w-full cursor-pointer rounded-md border border-border bg-input py-2.5 text-sm font-medium hover:bg-card"
+              >
+                Continue with Google
+              </button>
+              {GROK_PROVIDERS.filter((p) => p.idp !== "google").map((p) => (
                 <button
                   key={p.providerId}
                   type="button"
