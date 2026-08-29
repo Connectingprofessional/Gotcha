@@ -1,327 +1,79 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  Bot,
+  ArrowRight,
+  BarChart3,
+  BriefcaseBusiness,
   CheckCircle2,
+  ChevronRight,
+  CircleDollarSign,
+  FileSearch,
   Globe2,
-  LayoutGrid,
+  MapPin,
   Radar,
-  ShieldAlert,
-  ShieldCheck,
+  Search,
   Sparkles,
+  Target,
+  TrendingUp,
+  UserRound,
+  Zap,
 } from "lucide-react";
 import { JOBS, type Job } from "@/lib/data";
-import {
-  applicationAnalytics,
-  careerHuntScore,
-  scoreOpportunity,
-  shieldAssessment,
-} from "@/lib/careerIntelligence";
+import { applicationAnalytics, careerHuntScore, mobilityAssessment, scoreOpportunity } from "@/lib/careerIntelligence";
 import { useGotcha, useSessionUser } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
-const STAGES = [
-  { n: 1, title: "Foundation & Architecture", color: "#2dd4bf", range: "01-04", ticks: 4 },
-  { n: 2, title: "Professional Identity + Opportunity Engine", color: "#94a3b8", range: "05-10", ticks: 6 },
-  { n: 3, title: "Career Command Center + Roadmap", color: "#64748b", range: "11-14", ticks: 4 },
-  { n: 4, title: "Applications + AI Career Engine", color: "#f59e0b", range: "15-21", ticks: 7 },
-  { n: 5, title: "Global Intelligence", color: "#ef4444", range: "22-26", ticks: 5 },
-  { n: 6, title: "Global Access + Career Development", color: "#3b82f6", range: "27-30", ticks: 4 },
-  { n: 7, title: "Analytics + Shield + Production QA", color: "#06b6d4", range: "31-32", ticks: 2 },
-] as const;
+const surface = "rounded-2xl border border-border/80 bg-card/95 shadow-[0_14px_40px_rgba(0,0,0,0.16)]";
 
-const TOTAL_TICKS = STAGES.reduce((n, s) => n + s.ticks, 0);
+function SectionHeading({ icon: Icon, eyebrow, title, action, onAction }: { icon: typeof Search; eyebrow?: string; title: string; action?: string; onAction?: () => void }) {
+  return <div className="mb-4 flex items-start justify-between gap-3"><div>{eyebrow && <p className="mb-1 text-[9px] font-semibold uppercase tracking-[0.2em] text-primary-3">{eyebrow}</p>}<h2 className="flex items-center gap-2 text-sm font-semibold tracking-tight text-fg"><Icon className="size-4 text-primary-3" />{title}</h2></div>{action && onAction && <button type="button" onClick={onAction} className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary-3 hover:text-fg">{action}<ArrowRight className="size-3" /></button>}</div>;
+}
+
+function MetricCard({ label, value, detail, icon: Icon, tone = "text-fg", onClick }: { label: string; value: string | number; detail: string; icon: typeof Search; tone?: string; onClick?: () => void }) {
+  const Tag = onClick ? "button" : "div";
+  return <Tag type={onClick ? "button" : undefined} onClick={onClick} className={cn("w-full text-left", surface, "p-4 transition duration-200", onClick && "cursor-pointer hover:-translate-y-0.5 hover:border-primary/50 hover:bg-card-2")}><div className="flex items-start justify-between gap-2"><span className="flex size-8 items-center justify-center rounded-lg border border-border bg-surface"><Icon className="size-4 text-primary-3" /></span><TrendingUp className="size-3.5 text-emerald-400/80" /></div><p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-muted">{label}</p><p className={cn("mt-0.5 text-2xl font-bold tabular-nums", tone)}>{value}</p><p className="mt-1 text-[10px] leading-4 text-subtle">{detail}</p></Tag>;
+}
+
+function Funnel({ analytics }: { analytics: ReturnType<typeof applicationAnalytics> }) {
+  const stages = [{ label: "Discovered", value: Math.max(JOBS.length, analytics.total), width: 100, tone: "bg-primary" }, { label: "Applied", value: analytics.total, width: Math.max(12, Math.min(78, analytics.total * 8)), tone: "bg-cyan-400" }, { label: "Interview", value: analytics.interviews, width: Math.max(7, Math.min(58, analytics.interviews * 16)), tone: "bg-violet-400" }, { label: "Offer", value: analytics.offers, width: Math.max(4, Math.min(42, analytics.offers * 22)), tone: "bg-emerald-400" }];
+  return <div className="space-y-2.5">{stages.map((stage) => <div key={stage.label} className="grid grid-cols-[72px_minmax(0,1fr)_30px] items-center gap-2"><span className="text-[10px] text-muted">{stage.label}</span><div className="h-2 overflow-hidden rounded-full bg-bg"><div className={cn("h-full rounded-full transition-all", stage.tone)} style={{ width: `${stage.width}%` }} /></div><span className="text-right text-[10px] font-semibold tabular-nums text-fg">{stage.value}</span></div>)}</div>;
+}
+
+function CareerMap({ onOpen }: { onOpen: () => void }) {
+  const points = [[17, 39, "bg-emerald-400", "India"], [29, 27, "bg-cyan-400", "Singapore"], [48, 25, "bg-violet-400", "Europe"], [59, 42, "bg-amber-400", "GCC"], [71, 32, "bg-emerald-400", "APAC"], [81, 45, "bg-rose-400", "US"], [88, 61, "bg-cyan-400", "Canada"]] as const;
+  return <button type="button" onClick={onOpen} className="group relative h-[250px] w-full overflow-hidden rounded-xl border border-border/70 bg-[#07111c] text-left transition hover:border-primary/50"><div className="absolute inset-0 opacity-50" style={{ backgroundImage: "linear-gradient(rgba(90,140,180,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(90,140,180,.08) 1px, transparent 1px)", backgroundSize: "28px 28px" }} /><svg viewBox="0 0 100 60" className="absolute inset-0 h-full w-full opacity-80" preserveAspectRatio="none" aria-hidden><path d="M8 20 C17 11 27 13 34 20 C40 25 43 20 49 17 C58 12 67 14 76 21 C84 27 92 25 96 33" fill="none" stroke="rgba(88,130,170,.28)" strokeWidth=".7" /><path d="M10 36 C21 29 30 34 40 31 C50 28 59 34 67 30 C78 25 88 35 96 40" fill="none" stroke="rgba(88,130,170,.22)" strokeWidth=".6" /><path d="M17 39 Q34 16 48 25 T81 45" fill="none" stroke="#22d3ee" strokeWidth=".55" strokeDasharray="2 1.5" opacity=".7" /></svg>{points.map(([left, top, tone, label]) => <span key={label} className="absolute" style={{ left: `${left}%`, top: `${top}%` }}><span className={cn("absolute -inset-2 animate-pulse rounded-full opacity-20", tone)} /><span className={cn("relative block size-2 rounded-full ring-2 ring-bg/50", tone)} /><span className="absolute left-3 top-0 whitespace-nowrap text-[9px] text-slate-400">{label}</span></span>)}<div className="absolute bottom-3 left-3 right-3 flex items-center justify-between rounded-lg border border-white/10 bg-black/25 px-3 py-2 backdrop-blur-sm"><span className="text-[10px] text-slate-300"><Globe2 className="mr-1 inline size-3 text-primary-3" />Global opportunity density</span><span className="text-[9px] font-semibold text-primary-3 group-hover:text-fg">Explore map →</span></div></button>;
+}
 
 export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
   const user = useSessionUser();
   const applications = useGotcha((s) => s.applications);
+  const savedJobIds = useGotcha((s) => s.savedJobIds);
+  const cvText = useGotcha((s) => s.cvText);
+  const careerEvents = useGotcha((s) => s.careerEvents);
   const setView = useGotcha((s) => s.setView);
-
+  const setFilters = useGotcha((s) => s.setFilters);
+  const [query, setQuery] = useState("");
   const analytics = applicationAnalytics(applications);
-  const huntScore = careerHuntScore(user, applications) || 85;
+  const huntScore = careerHuntScore(user, applications);
+  const mobility = user ? mobilityAssessment(user) : { score: 0, markets: [], factors: [] };
+  const topMatches = useMemo(() => user ? [...JOBS].map((job) => ({ job, score: scoreOpportunity(job, user).overall })).sort((a, b) => b.score - a.score).slice(0, 4) : [], [user]);
+  const targetMarket = user?.targetCountries?.[0] ?? "Global";
+  const recentApps = applications.slice(0, 4).map((a) => ({ app: a, job: JOBS.find((j) => j.id === a.jobId) })).filter((x): x is { app: (typeof applications)[number]; job: Job } => Boolean(x.job));
 
-  const topMatches = useMemo(
-    () =>
-      user
-        ? [...JOBS]
-            .map((job) => ({ job, score: scoreOpportunity(job, user).overall }))
-            .sort((a, b) => b.score - a.score)
-            .slice(0, 2)
-        : [],
-    [user],
-  );
+  function launchSearch() { const clean = query.trim(); if (clean) setFilters({ role: clean }); setView("search"); }
 
-  const shield = topMatches[0]
-    ? shieldAssessment(topMatches[0].job)
-    : { level: "low" as const, reasons: [] };
-  const riskySignals = JOBS.filter((j) => shieldAssessment(j).level !== "low").length;
-  const responseRate = analytics.responseRate || 22;
-  const interviewRate = analytics.interviewRate || 45;
+  return <div className="min-w-0 space-y-5">
+    <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-linear-to-br from-card via-card to-primary/5 p-5 md:p-6"><div className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-primary/10 blur-3xl" /><div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between"><div className="max-w-2xl"><p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-primary-3">GOTCHA INTELLIGENCE CENTER</p><h1 className="mt-1 text-2xl font-semibold tracking-tight md:text-3xl">Good morning{user?.name ? `, ${user.name.split(" ")[0]}` : ""}.</h1><p className="mt-2 max-w-xl text-sm leading-6 text-muted">Your AI-powered career command center — discover better-fit opportunities, understand your market, and move the right applications forward.</p></div><button type="button" onClick={() => setView("hunt")} className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-semibold glow-primary">Launch Hunt Mode <Zap className="size-3.5" /></button></div><div className="relative mt-5 flex flex-col overflow-hidden rounded-xl border border-border bg-bg/60 md:flex-row"><div className="flex min-w-0 flex-1 items-center gap-3 px-4 py-3"><Search className="size-4 shrink-0 text-primary-3" /><input value={query} onChange={(e) => setQuery(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") launchSearch(); }} placeholder="Ask Gotcha to find your next opportunity…" className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-subtle" /></div><button type="button" onClick={launchSearch} className="m-1 rounded-lg bg-primary px-5 py-2 text-xs font-semibold">AI Search <ArrowRight className="ml-1 inline size-3" /></button></div></section>
 
-  const recentActivity = user
-    ? [
-        { id: "1", kind: "check" as const, title: "AI Mock Interview scheduled with TechCorp", count: 6 },
-        { id: "2", kind: "match" as const, title: "New Match Found: Senior Product Manager at GlobalLogic (98% Score)", count: 20 },
-      ]
-    : [];
+    <div className="grid grid-cols-2 gap-3 xl:grid-cols-4"><MetricCard label="AI Match Pool" value={JOBS.length} detail="Current opportunities in your live dataset" icon={Radar} tone="text-cyan-300" onClick={() => setView("opportunities")} /><MetricCard label="Career Hunt Score" value={huntScore || "—"} detail="Profile + activity readiness score" icon={Target} tone="text-violet-300" onClick={() => setView("profile")} /><MetricCard label="Applications" value={analytics.total} detail={`${analytics.followUpsDue} follow-ups currently due`} icon={BriefcaseBusiness} tone="text-amber-300" onClick={() => setView("applications")} /><MetricCard label="Saved Opportunities" value={savedJobIds.length} detail="Roles you want to revisit" icon={CheckCircle2} tone="text-emerald-300" onClick={() => setView("saved")} /></div>
 
-  const aiRecs =
-    topMatches.length > 0
-      ? topMatches.map(({ job, score }) => ({
-          id: job.id,
-          title: `AI Mock Interview · ${job.title} at ${job.company}`,
-          score,
-        }))
-      : [];
+    <section className={cn(surface, "p-5")}><SectionHeading icon={Sparkles} eyebrow="AI TALENT ACQUISITION SEARCH" title="Find roles that fit your career, not just your keywords" action="Open AI Job Search" onAction={() => setView("search")} /><div className="grid gap-4 lg:grid-cols-[1.4fr_.8fr_.8fr]"><button type="button" onClick={() => setView("search")} className="group rounded-xl border border-primary/20 bg-linear-to-br from-primary/10 to-transparent p-4 text-left transition hover:border-primary/50"><div className="flex items-center justify-between"><span className="flex size-9 items-center justify-center rounded-lg bg-primary/15"><Sparkles className="size-4 text-primary-3" /></span><ChevronRight className="size-4 text-muted transition group-hover:translate-x-1 group-hover:text-primary-3" /></div><p className="mt-4 text-sm font-semibold">Natural-language talent search</p><p className="mt-1 text-xs leading-5 text-muted">Describe your ideal role, geography, seniority and work model. Gotcha carries your preferences into the existing AI search engine.</p><span className="mt-4 inline-flex rounded-full border border-border bg-surface px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wider text-primary-3">{user?.targetRoles?.[0] ?? "Build your target"}</span></button><div className="rounded-xl border border-border bg-surface p-4"><p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted">Target market</p><p className="mt-2 text-lg font-semibold">{targetMarket}</p><p className="mt-1 text-[10px] text-subtle">Mobility readiness <span className="font-semibold text-fg">{mobility.score || "—"}/100</span></p><div className="mt-3 h-1.5 rounded-full bg-bg"><div className="h-full rounded-full bg-primary" style={{ width: `${mobility.score || 0}%` }} /></div></div><div className="rounded-xl border border-border bg-surface p-4"><p className="text-[9px] font-semibold uppercase tracking-[0.16em] text-muted">Search activity</p><p className="mt-2 text-lg font-semibold">{careerEvents.length}</p><p className="mt-1 text-[10px] text-subtle">Career events captured across your Gotcha journey.</p><button type="button" onClick={() => setView("saved")} className="mt-3 text-[10px] font-semibold text-primary-3">Review saved searches →</button></div></div></section>
 
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-        <section className="rounded-xl border border-border bg-card p-4 xl:col-span-4">
-          <h2 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-            <Radar className="size-3.5 text-primary-3" />
-            32-Stage Master Product Build Roadmap &amp; Workflow
-          </h2>
-          <div className="relative mx-auto aspect-square w-full max-w-[240px]">
-            <svg viewBox="0 0 200 200" className="h-full w-full" aria-hidden>
-              <defs>
-                <filter id="sg">
-                  <feGaussianBlur stdDeviation="1.1" result="b" />
-                  <feMerge>
-                    <feMergeNode in="b" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
-              </defs>
-              <circle cx="100" cy="100" r="68" fill="none" stroke="rgba(148,163,184,0.1)" strokeWidth="22" />
-              {(() => {
-                let start = -90;
-                return STAGES.map((s) => {
-                  const sweep = (s.ticks / TOTAL_TICKS) * 360 - 1.5;
-                  const end = start + sweep;
-                  const large = sweep > 180 ? 1 : 0;
-                  const r = 68;
-                  const x1 = 100 + r * Math.cos((start * Math.PI) / 180);
-                  const y1 = 100 + r * Math.sin((start * Math.PI) / 180);
-                  const x2 = 100 + r * Math.cos((end * Math.PI) / 180);
-                  const y2 = 100 + r * Math.sin((end * Math.PI) / 180);
-                  const mid = start + sweep / 2;
-                  const tx = 100 + r * Math.cos((mid * Math.PI) / 180);
-                  const ty = 100 + r * Math.sin((mid * Math.PI) / 180);
-                  const el = (
-                    <g key={s.n}>
-                      <path d={`M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`} fill="none" stroke={s.color} strokeWidth="20" filter="url(#sg)" opacity={0.95} />
-                      <text x={tx} y={ty} textAnchor="middle" dominantBaseline="central" fill="#0a1220" style={{ fontSize: 5.2, fontWeight: 700 }}>{s.range}</text>
-                    </g>
-                  );
-                  start = end + 1.5;
-                  return el;
-                });
-              })()}
-              <circle cx="100" cy="100" r="46" fill="var(--color-card)" />
-              <text x="100" y="96" textAnchor="middle" fill="#8b9bb4" style={{ fontSize: 7, fontWeight: 600 }}>STAGE</text>
-              <text x="100" y="110" textAnchor="middle" fill="#f1f5f9" style={{ fontSize: 16, fontWeight: 700 }}>3/7</text>
-              <text x="100" y="122" textAnchor="middle" fill="#64748b" style={{ fontSize: 6 }}>32 sub-points</text>
-            </svg>
-          </div>
-          <div className="mt-3 grid grid-cols-2 gap-x-2 gap-y-1.5 text-[10px] leading-snug text-muted">
-            {STAGES.map((s) => (
-              <div key={s.n} className="flex items-start gap-1.5">
-                <span className="mt-0.5 flex size-3.5 shrink-0 items-center justify-center rounded-full text-[8px] font-bold text-[#0a1220]" style={{ background: s.color }}>{s.n}</span>
-                <span>{s.title}</span>
-              </div>
-            ))}
-          </div>
-        </section>
+    <div className="grid gap-5 xl:grid-cols-2"><section className={cn(surface, "p-5")}><SectionHeading icon={Sparkles} eyebrow="AI CAREER COACH & INSIGHT" title="Your next best career move" action="Open Coach" onAction={() => setView("coach")} /><div className="rounded-xl border border-primary/20 bg-primary/5 p-4"><div className="flex items-start gap-3"><span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary/15"><Sparkles className="size-4 text-primary-3" /></span><div className="min-w-0"><p className="text-sm font-semibold">{user?.targetRoles?.[0] ? `Prioritize ${user.targetRoles[0]} roles` : "Complete your profile to unlock personalized guidance"}</p><p className="mt-1 text-xs leading-5 text-muted">{analytics.total === 0 ? "Start with a focused application rather than volume. Gotcha will use your profile and role fit to guide the hunt." : `You have ${analytics.total} tracked application${analytics.total === 1 ? "" : "s"}. Your current response rate is ${analytics.responseRate}%; use the Coach to decide what to improve next.`}</p></div></div><button type="button" onClick={() => setView("coach")} className="mt-4 rounded-lg border border-border bg-surface px-3 py-2 text-[10px] font-semibold hover:border-primary/50">Ask AI Career Coach <ArrowRight className="ml-1 inline size-3" /></button></div><div className="mt-4 grid grid-cols-3 gap-2"><div className="rounded-lg bg-surface p-3"><p className="text-[9px] uppercase text-muted">Response</p><p className="mt-1 text-lg font-bold text-amber-300">{analytics.responseRate}%</p></div><div className="rounded-lg bg-surface p-3"><p className="text-[9px] uppercase text-muted">Interview</p><p className="mt-1 text-lg font-bold text-violet-300">{analytics.interviewRate}%</p></div><div className="rounded-lg bg-surface p-3"><p className="text-[9px] uppercase text-muted">Offer</p><p className="mt-1 text-lg font-bold text-emerald-300">{analytics.offerRate}%</p></div></div></section><section className={cn(surface, "p-5")}><SectionHeading icon={Globe2} eyebrow="GLOBAL CAREER MAP & PREDICTIVE PIPELINE" title="Where your career can move next" action="Open Global Intelligence" onAction={() => setView("network")} /><CareerMap onOpen={() => setView("network")} /><div className="mt-3 flex flex-wrap items-center gap-2 text-[9px] text-muted"><span className="rounded-full border border-border px-2 py-1">{mobility.markets.length || 1} target markets</span><span className="rounded-full border border-border px-2 py-1">{JOBS.filter((j) => j.work === "Remote").length} remote roles</span><span className="rounded-full border border-border px-2 py-1">Predictive fit enabled</span></div></section></div>
 
-        <section className="rounded-xl border border-border bg-card p-4 xl:col-span-5">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-              <Globe2 className="size-3.5 text-primary-3" /> Global Career Map
-            </h2>
-            <div className="flex items-center gap-3 text-[10px] text-muted">
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-red-500" /> Target</span>
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-emerald-400" /> Applied</span>
-              <span className="flex items-center gap-1.5"><span className="size-2 rounded-full bg-slate-400" /> Shortlisted</span>
-            </div>
-          </div>
-          <div className="relative min-h-[260px] overflow-hidden rounded-lg border border-border/60 bg-[#081018]">
-            <svg viewBox="0 0 1000 500" className="absolute inset-0 h-full w-full" preserveAspectRatio="xMidYMid slice" aria-hidden>
-              <defs>
-                <filter id="ht"><feGaussianBlur stdDeviation="12" /></filter>
-                <radialGradient id="hg1" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#22c55e" stopOpacity="0.7" /><stop offset="100%" stopColor="#22c55e" stopOpacity="0" /></radialGradient>
-                <radialGradient id="hg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#ef4444" stopOpacity="0.65" /><stop offset="100%" stopColor="#ef4444" stopOpacity="0" /></radialGradient>
-                <radialGradient id="hg3" cx="50%" cy="50%" r="50%"><stop offset="0%" stopColor="#f59e0b" stopOpacity="0.6" /><stop offset="100%" stopColor="#f59e0b" stopOpacity="0" /></radialGradient>
-              </defs>
-              <g fill="#1a3355" stroke="#243f63" strokeWidth="1.2">
-                <path d="M95 100 Q150 75 220 95 Q280 120 290 170 Q270 220 220 245 Q150 255 100 220 Q70 170 95 100Z" />
-                <path d="M220 260 Q260 270 270 330 Q255 400 210 420 Q165 400 170 330 Q175 280 220 260Z" />
-                <path d="M430 85 Q490 70 530 95 Q555 125 540 165 Q500 180 460 160 Q420 140 430 85Z" />
-                <path d="M460 185 Q520 175 555 220 Q570 300 525 360 Q470 385 430 330 Q415 250 460 185Z" />
-                <path d="M560 80 Q680 55 800 100 Q870 150 840 210 Q780 240 700 225 Q620 200 570 160 Q540 120 560 80Z" />
-                <path d="M760 330 Q840 315 880 360 Q865 410 800 420 Q740 400 760 330Z" />
-              </g>
-              <circle cx="180" cy="150" r="45" fill="url(#hg1)" filter="url(#ht)" />
-              <circle cx="480" cy="120" r="35" fill="url(#hg3)" filter="url(#ht)" />
-              <circle cx="650" cy="160" r="50" fill="url(#hg2)" filter="url(#ht)" />
-              <circle cx="750" cy="190" r="40" fill="url(#hg3)" filter="url(#ht)" />
-              <circle cx="780" cy="250" r="30" fill="url(#hg1)" filter="url(#ht)" />
-              <circle cx="230" cy="340" r="25" fill="url(#hg1)" filter="url(#ht)" />
-              {[[160,140,"#22c55e"],[200,165,"#94a3b8"],[470,115,"#f59e0b"],[510,140,"#22c55e"],[620,150,"#ef4444"],[680,175,"#f59e0b"],[720,165,"#22c55e"],[760,210,"#ef4444"],[800,255,"#22c55e"],[210,330,"#94a3b8"]].map(([x,y,c],i) => (
-                <circle key={i} cx={x as number} cy={y as number} r="5" fill={c as string}>
-                  <animate attributeName="opacity" values="0.5;1;0.5" dur={`${1.5+(i%4)*0.3}s`} repeatCount="indefinite" />
-                </circle>
-              ))}
-            </svg>
-            <span className="absolute left-[9%] top-[32%] text-[10px] font-medium text-slate-400">North America</span>
-            <span className="absolute left-[44%] top-[14%] text-[10px] font-medium text-slate-400">Europe</span>
-            <span className="absolute right-[14%] top-[28%] text-[10px] font-medium text-slate-400">Asia-Pacific</span>
-            <span className="absolute bottom-[18%] left-[20%] text-[10px] font-medium text-slate-400">Asia-Pacific</span>
-          </div>
-        </section>
+    <section className={cn(surface, "p-5")}><SectionHeading icon={BriefcaseBusiness} eyebrow="TOP CURATED OPPORTUNITIES" title="High-fit roles worth your attention" action="View all opportunities" onAction={() => setView("opportunities")} /><div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">{topMatches.map(({ job, score }) => <button key={job.id} type="button" onClick={() => onOpenJob(job)} className="group rounded-xl border border-border bg-surface p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/50 hover:bg-card-2"><div className="flex items-start justify-between gap-2"><span className="flex size-9 items-center justify-center rounded-lg text-xs font-bold" style={{ background: job.logoBg }}>{job.logo}</span><span className="rounded-full bg-emerald-400/10 px-2 py-1 text-[9px] font-bold text-emerald-300">{score}% fit</span></div><p className="mt-3 line-clamp-2 text-sm font-semibold">{job.title}</p><p className="mt-1 text-[10px] text-muted">{job.company}</p><p className="mt-3 flex items-center gap-1 text-[10px] text-subtle"><MapPin className="size-3" />{job.location}</p><p className="mt-1 flex items-center gap-1 text-[10px] text-subtle"><CircleDollarSign className="size-3" />{job.salary}</p><span className="mt-4 inline-flex items-center text-[9px] font-semibold text-primary-3">View role <ArrowRight className="ml-1 size-3 transition group-hover:translate-x-1" /></span></button>)}</div></section>
 
-        <section className="rounded-xl border border-border bg-card p-4 xl:col-span-3">
-          <h2 className="mb-1 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-            <LayoutGrid className="size-3.5 text-primary-3" /> Live Career Roadmap Pipeline
-          </h2>
-          <p className="mb-2 text-[10px] text-subtle">Search → Shortlisted → Screened → Applied → Response</p>
-          <div className="relative min-h-[260px] overflow-hidden rounded-lg">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-cyan-500/5 to-cyan-500/10" />
-            <svg viewBox="0 0 280 260" className="absolute inset-0 h-full w-full" aria-hidden>
-              <defs>
-                <linearGradient id="rd" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#1e293b" /><stop offset="100%" stopColor="#0f172a" /></linearGradient>
-                <linearGradient id="ln" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#38bdf8" stopOpacity="0.95" /><stop offset="100%" stopColor="#38bdf8" stopOpacity="0.1" /></linearGradient>
-              </defs>
-              <path d="M30 240 L115 30 L165 30 L250 240 Z" fill="url(#rd)" />
-              <path d="M140 35 L140 230" stroke="url(#ln)" strokeWidth="2.5" strokeDasharray="9 7" fill="none" />
-              <path d="M42 235 L120 35" stroke="#38bdf8" strokeWidth="1.2" opacity="0.3" fill="none" />
-              <path d="M238 235 L160 35" stroke="#38bdf8" strokeWidth="1.2" opacity="0.3" fill="none" />
-              {[{l:"Stage 1",y:210},{l:"Stage 2",y:170},{l:"Stage 2",y:130},{l:"Interview",y:90},{l:"Final",y:55}].map((p,i) => (
-                <g key={i}>
-                  <circle cx="140" cy={p.y} r="6" fill={i<4?"#22d3ee":"#334155"} stroke={i<4?"#67e8f9":"#475569"} strokeWidth="1.5" />
-                  <circle cx="140" cy={p.y} r="2.5" fill={i<4?"#ecfeff":"#94a3b8"} />
-                  <text x="152" y={p.y+3} fill="#cbd5e1" style={{fontSize:9,fontWeight:500}}>{p.l}</text>
-                </g>
-              ))}
-              <circle cx="140" cy="32" r="4.5" fill="#a78bfa" stroke="#c4b5fd" strokeWidth="1.2" />
-              <text x="152" y="35" fill="#c4b5fd" style={{fontSize:9,fontWeight:600}}>Appointment</text>
-            </svg>
-          </div>
-        </section>
-      </div>
+    <div className="grid gap-5 lg:grid-cols-2"><section className={cn(surface, "p-5")}><SectionHeading icon={FileSearch} eyebrow="JOB MATCH & CV ANALYSIS" title="Make every application stronger" action="Open CV Intelligence" onAction={() => setView("cv")} /><div className="grid gap-3 sm:grid-cols-2"><button type="button" onClick={() => setView("cv")} className="rounded-xl border border-border bg-surface p-4 text-left transition hover:border-primary/50"><div className="flex items-center justify-between"><FileSearch className="size-5 text-primary-3" /><span className={cn("text-[9px] font-semibold", cvText ? "text-emerald-300" : "text-amber-300")}>{cvText ? "PROFILE READY" : "ACTION NEEDED"}</span></div><p className="mt-3 text-sm font-semibold">CV Intelligence</p><p className="mt-1 text-[10px] leading-4 text-muted">{cvText ? "Your CV is available for role alignment and variant analysis." : "Upload or build your CV so Gotcha can align it to target roles."}</p></button><button type="button" onClick={() => setView("opportunities")} className="rounded-xl border border-border bg-surface p-4 text-left transition hover:border-primary/50"><div className="flex items-center justify-between"><BarChart3 className="size-5 text-primary-3" /><span className="text-[9px] font-semibold text-emerald-300">LIVE</span></div><p className="mt-3 text-sm font-semibold">Match analysis</p><p className="mt-1 text-[10px] leading-4 text-muted">Compare fit signals across skills, experience, location, work model and growth.</p></button></div></section><section className={cn(surface, "p-5")}><SectionHeading icon={BarChart3} eyebrow="RECENT ACTIVITY / FUNNEL" title="Your hunt in motion" action="Open Applications" onAction={() => setView("applications")} /><div className="grid gap-4 sm:grid-cols-[1.05fr_.95fr]"><Funnel analytics={analytics} /><div className="space-y-2">{recentApps.length ? recentApps.map(({ app, job }) => <button key={app.id} type="button" onClick={() => onOpenJob(job)} className="flex w-full items-center gap-2 rounded-lg border border-border bg-surface p-2.5 text-left hover:border-primary/40"><span className="flex size-7 shrink-0 items-center justify-center rounded-md text-[9px] font-bold" style={{ background: job.logoBg }}>{job.logo}</span><span className="min-w-0 flex-1"><span className="block truncate text-[10px] font-semibold">{job.company} · {job.title}</span><span className="text-[9px] capitalize text-muted">{app.status} · {app.appliedAt}</span></span><ChevronRight className="size-3 text-subtle" /></button>) : <div className="rounded-lg border border-dashed border-border p-4"><p className="text-xs font-medium">No applications yet</p><p className="mt-1 text-[10px] leading-4 text-muted">Open Opportunities, choose a role, and use the existing Apply flow to start your funnel.</p><button type="button" onClick={() => setView("opportunities")} className="mt-3 text-[10px] font-semibold text-primary-3">Find your first match →</button></div>}</div></div></section></div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <section className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-              <Sparkles className="size-3.5 text-primary-3" /> Career Hunt Funnel
-            </h2>
-            <span className="text-[10px] text-subtle">Conversion (%)</span>
-          </div>
-          <div className="flex items-end justify-center gap-2.5 pt-1">
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="h-[90px] w-14 bg-gradient-to-b from-cyan-300 to-blue-600 shadow-lg" style={{clipPath:"polygon(12% 0%, 88% 0%, 100% 100%, 0% 100%)"}} />
-              <span className="text-[10px] font-medium text-muted">Search</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="relative flex h-11 w-11 items-center justify-center rounded-md bg-gradient-to-b from-teal-300 to-cyan-600 shadow"><span className="text-[11px] font-bold text-white">3%</span></div>
-              <span className="text-[10px] font-medium text-muted">Shortlisted</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="relative flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-b from-sky-300 to-blue-500 shadow"><span className="text-[11px] font-bold text-white">0%</span></div>
-              <span className="text-[10px] font-medium text-muted">Applied</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="relative flex h-10 w-10 items-center justify-center bg-gradient-to-b from-orange-300 to-amber-600 shadow" style={{clipPath:"polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%)"}}><span className="text-[11px] font-bold text-white">1%</span></div>
-              <span className="text-[10px] font-medium text-muted">Interview</span>
-            </div>
-            <div className="flex flex-col items-center gap-1.5">
-              <div className="h-12 w-9 bg-gradient-to-b from-rose-400 to-red-600 shadow-lg" style={{clipPath:"polygon(0% 0%, 100% 0%, 75% 100%, 25% 100%)"}} />
-              <span className="text-[10px] font-medium text-muted">Offer</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-border bg-card p-4">
-          <h2 className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-            <CheckCircle2 className="size-3.5 text-primary-3" /> Recent Activity
-          </h2>
-          {recentActivity.length ? (
-            <div className="space-y-2.5">
-              {recentActivity.map((a) => (
-                <div key={a.id} className="flex items-start gap-2.5 rounded-lg border border-border bg-surface/60 p-2.5">
-                  <span className={cn("mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full text-[10px]", a.kind==="check"?"bg-emerald-500/20 text-emerald-400":"bg-sky-500/20 text-sky-400")}>{a.kind==="check"?"✓":"◎"}</span>
-                  <p className="min-w-0 flex-1 text-xs font-medium leading-4 text-fg">{a.title}</p>
-                  <span className="text-[11px] tabular-nums text-subtle">{a.count}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs leading-5 text-muted">No activity yet — discover an opportunity or apply to start your live feed.</p>
-          )}
-        </section>
-
-        <section className="rounded-xl border border-border bg-card p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-              <Bot className="size-3.5 text-primary-3" /> AI Career Agent Recommendations
-            </h2>
-            <button type="button" onClick={() => setView("coach")} className="text-[10px] font-semibold text-primary-3 hover:underline">Ask agent</button>
-          </div>
-          {aiRecs.length ? (
-            <div className="space-y-2.5">
-              {aiRecs.map((r) => (
-                <button key={r.id} type="button" onClick={() => { const job = JOBS.find(j => j.id === r.id); if (job) onOpenJob(job); else setView("coach"); }}
-                  className="flex w-full items-start gap-2.5 rounded-lg border border-border bg-surface/60 p-2.5 text-left transition hover:bg-card-2">
-                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-amber-500/20 text-[10px] text-amber-400">●</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium leading-4 text-fg">{r.title}</p>
-                    <p className="mt-0.5 text-[10px] text-muted">{r.score}% Score</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs leading-5 text-muted">Complete your profile so the AI Career Agent can surface recommendations.</p>
-          )}
-        </section>
-      </div>
-
-      <section className="rounded-xl border border-border bg-card p-4">
-        <h2 className="mb-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-          <ShieldCheck className="size-3.5 text-primary-3" /> Key Metrics &amp; Gotcha Shield
-        </h2>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-          <div className="rounded-lg border border-border bg-surface p-3.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Career Hunt Score</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-sky-400">{huntScore}<span className="text-xs font-medium text-muted">/100</span></p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-3.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Application Response Rate</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-orange-400">{responseRate}<span className="text-xs font-medium text-muted">%</span></p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-3.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Interview Conversion Rate</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums text-fg">{interviewRate}<span className="text-xs font-medium text-muted">%</span></p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-3.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Gotcha Shield Status</p>
-            <p className={cn("mt-1 text-2xl font-bold tracking-wide", shield.level==="low"?"text-emerald-400":"text-red-400")}>{shield.level==="low"?"SECURE":shield.level.toUpperCase()}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-surface p-3.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Gotcha Shield Signals</p>
-            <div className="mt-1.5 space-y-1 text-xs">
-              <div className="flex items-center justify-between gap-1">
-                <span className="flex items-center gap-1 text-muted"><ShieldAlert className="size-3.5 text-red-400" /> Fake Job Detect</span>
-                <span className="font-semibold tabular-nums">0</span>
-              </div>
-              <div className="flex items-center justify-between gap-1">
-                <span className="flex items-center gap-1 text-muted"><ShieldAlert className="size-3.5 text-amber-400" /> Scam Indicators</span>
-                <span className="font-semibold tabular-nums">{riskySignals}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    <section className="overflow-hidden rounded-2xl border border-primary/20 bg-linear-to-r from-primary/10 via-card to-card p-6"><div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center"><div><p className="text-[9px] font-semibold uppercase tracking-[0.2em] text-primary-3">THE GOTCHA DIFFERENCE</p><h2 className="mt-1 text-xl font-semibold">Why Professionals Choose GOTCHA</h2><p className="mt-2 max-w-2xl text-xs leading-5 text-muted">One intelligence layer connects discovery, matching, CV strategy, career coaching, global mobility and application progress — without creating duplicate workflows.</p></div><button type="button" onClick={() => setView("hunt")} className="inline-flex items-center justify-center gap-2 rounded-xl border border-primary/40 bg-primary/10 px-4 py-2.5 text-xs font-semibold text-primary-3 hover:bg-primary/20">Keep hunting <ArrowRight className="size-3.5" /></button></div><div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4">{[{ icon: Zap, t: "AI-Powered Matching", d: "Fit beyond keywords", view: "search" }, { icon: Globe2, t: "Global Intelligence", d: "Markets and mobility", view: "network" }, { icon: FileSearch, t: "CV Intelligence", d: "Role-specific positioning", view: "cv" }, { icon: UserRound, t: "End-to-End Support", d: "Coach to application", view: "coach" }].map((x) => <button type="button" key={x.t} onClick={() => setView(x.view as Parameters<typeof setView>[0])} className="rounded-xl border border-border bg-surface/80 p-3 text-left hover:border-primary/40"><x.icon className="size-4 text-primary-3" /><p className="mt-2 text-[10px] font-semibold">{x.t}</p><p className="mt-0.5 text-[9px] text-subtle">{x.d}</p></button>)}</div></section>
+  </div>;
 }
