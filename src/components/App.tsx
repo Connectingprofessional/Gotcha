@@ -1150,6 +1150,14 @@ function JobModal({ job, onClose }: { job: Job; onClose: () => void }) {
                   {job.relocation === "available" ? "Available" : job.relocation === "not_available" ? "Not offered" : "Not published"}
                 </span>
               </div>
+              {global.timezoneOverlapHours !== undefined && (
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-muted">Working-hours overlap</span>
+                  <span className={cn("font-medium", global.timezoneOverlapHours >= 4 ? "text-success" : global.timezoneOverlapHours >= 2 ? "text-fg" : "text-warn")}>
+                    {global.timezoneOverlapHours.toFixed(1)}h/day
+                  </span>
+                </div>
+              )}
               {global.salaryAnnualMin !== undefined || global.salaryAnnualMax !== undefined ? (
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-muted">Compensation ({global.targetCurrency ?? job.currency})</span>

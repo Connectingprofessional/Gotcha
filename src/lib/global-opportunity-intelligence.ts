@@ -115,6 +115,7 @@ export type GlobalOpportunityResult = {
   employmentScore: number;
   mobilityScore: number;
   timezoneScore: number;
+  timezoneOverlapHours?: number;
   financialScore: number;
   confidence: "high" | "medium" | "low";
   warnings: string[];
@@ -142,6 +143,34 @@ export type UserMobilitySource = {
   visaStatus?: string;
 };
 
+import { workingHourOverlap } from "./career/global-compensation.ts";
+
+/**
+ * IANA time zone for countries that are unambiguously single-zone — safe to
+ * map a country name straight to one zone without misrepresenting overlap
+ * hours. Deliberately excludes multi-timezone countries (US, Canada,
+ * Australia, Russia, Brazil, etc.) where a single country-level zone would
+ * be wrong for many candidates/employers; those simply get no timezone
+ * score rather than a guessed one.
+ */
+const SINGLE_ZONE_COUNTRY_TIMEZONE: Record<string, string> = {
+  india: "Asia/Kolkata",
+  singapore: "Asia/Singapore",
+  "united kingdom": "Europe/London",
+  japan: "Asia/Tokyo",
+  germany: "Europe/Berlin",
+  france: "Europe/Paris",
+  "united arab emirates": "Asia/Dubai",
+  "south korea": "Asia/Seoul",
+  netherlands: "Europe/Amsterdam",
+  ireland: "Europe/Dublin",
+};
+
+function timezoneFor(country?: string): string | undefined {
+  if (!country) return undefined;
+  return SINGLE_ZONE_COUNTRY_TIMEZONE[country.trim().toLowerCase()];
+}
+
 /**
  * Builds a `GlobalOpportunityContext` from data the app already has on a
  * job listing and the signed-in user's profile — no external mobility, tax,
@@ -166,10 +195,17 @@ export function buildMobilityAndCompContext(job: JobMobilitySource, user?: UserM
       }
     : undefined;
 
+  const candidateTimeZone = timezoneFor(user?.country);
+  const employerTimeZone = timezoneFor(job.country);
+  const timezone: TimezoneInput | undefined = candidateTimeZone && employerTimeZone
+    ? { candidateTimeZone, employerTimeZone, overlapHours: workingHourOverlap(candidateTimeZone, employerTimeZone) }
+    : undefined;
+
   return {
     compensation,
     targetCurrency,
     mobility,
+    timezone,
     employmentType: undefined,
   };
 }
@@ -274,6 +310,7 @@ export function evaluateGlobalOpportunity(ctx: GlobalOpportunityContext = {}): G
     employmentScore,
     mobilityScore,
     timezoneScore,
+    timezoneOverlapHours: ctx.timezone?.overlapHours,
     financialScore,
     confidence,
     warnings,
