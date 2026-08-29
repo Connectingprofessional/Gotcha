@@ -26,10 +26,9 @@ export function ExperienceGate() {
     }
   }, [authSession, sessionEmail, hydrateFromAuth]);
 
-  // Never block the entry experience while the remote auth session is loading or unavailable.
-  // Local email/password access remains available and the landing -> login -> dashboard flow works
-  // even when the Better Auth endpoint is temporarily unavailable.
-  if (sessionEmail || authSession?.user?.email) return <App />;
+  // A persisted local session must not bypass the public landing page.
+  // Only a real Better Auth session may restore an already-authenticated visit.
+  if (authSession?.user?.email) return <App />;
   if (!entered) return <Landing onEnter={() => setEntered(true)} />;
 
   async function submit(e: FormEvent) {
@@ -37,15 +36,7 @@ export function ExperienceGate() {
     setError("");
     setBusy(true);
     if (registering) {
-      const result = register({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        title: "",
-        location: "",
-        about: "",
-        skills: [],
-      });
+      const result = register({ name: name.trim(), email: email.trim(), password, title: "", location: "", about: "", skills: [] });
       if (!result.ok) setError(result.error ?? "Unable to create account");
     } else {
       const result = login(email, password);
