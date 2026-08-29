@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, Play, Sparkles } from "lucide-react";
 import { App } from "@/components/App";
 import { useGotcha } from "@/lib/store";
-import { authClient } from "@/lib/auth/client";
+import { authClient, signIn as signInWithBroker } from "@/lib/auth/client";
 
 export function ExperienceGate() {
   const sessionEmail = useGotcha((s) => s.sessionEmail);
@@ -60,8 +60,6 @@ export function ExperienceGate() {
       } else {
         hydrateFromAuth(data.user.email, data.user.name ?? "");
       }
-      // Force a clean application request so the new Better Auth cookie is read
-      // by the server and the dashboard is rendered from the authenticated session.
       window.location.assign("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");
@@ -75,18 +73,9 @@ export function ExperienceGate() {
     setError("");
     setBusy(true);
     try {
-      // Use Better Auth's native Google provider so the user gets the normal
-      // Google/Gmail account chooser rather than the shared Grok broker.
-      const { data, error: googleError } = await authClient.signIn.social({
-        provider: "google",
-        callbackURL: "/",
-      });
-      if (googleError) throw new Error(googleError.message ?? "Google sign-in failed");
-      if (data?.url) {
-        window.location.assign(data.url);
-        return;
-      }
-      throw new Error("Google sign-in did not return an authorization URL.");
+      // Google is federated through the configured Grok OAuth broker in this app.
+      // Do not call Better Auth's native /sign-in/social endpoint here.
+      await signInWithBroker("grok-google", { callbackURL: "/", errorCallbackURL: "/" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
       setBusy(false);
@@ -111,8 +100,8 @@ export function ExperienceGate() {
               <div className="my-6 flex items-center gap-3"><span className="h-px flex-1 bg-border" /><span className="text-[10px] uppercase tracking-[.18em] text-subtle">or</span><span className="h-px flex-1 bg-border" /></div>
               <form onSubmit={submit} className="space-y-4">
                 {registering && <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Full name</span><input value={name} onChange={(e) => setName(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:border-primary" placeholder="Your name" /></label>}
-                <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Email</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:border-primary" placeholder="you@example.com" /></label>
-                <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Password</span><span className="relative block"><input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 pr-11 text-sm outline-none focus:border-primary" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"><span className="sr-only">Toggle password visibility</span>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></span></label>
+                <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Email</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 text-sm outline-none focus:border-primary" placeholder="you@example.com" /></label>
+                <label className="block"><span className="mb-1.5 block text-xs font-medium text-muted">Password</span><span className="relative block"><input type={showPassword ? "text" : "password"} autoComplete={registering ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full rounded-xl border border-border bg-input px-4 py-3 pr-11 text-sm outline-none focus:border-primary" placeholder="••••••••" /><button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted"><span className="sr-only">Toggle password visibility</span>{showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}</button></span></label>
                 {!registering && <div className="flex justify-end"><button type="button" className="text-xs font-medium text-primary-3 hover:text-fg">Forgot Password?</button></div>}
                 {error && <p className="rounded-lg border border-red-400/20 bg-red-400/5 px-3 py-2 text-xs text-red-300">{error}</p>}
                 <button type="submit" disabled={busy} className="w-full rounded-xl bg-primary px-4 py-3 text-sm font-bold tracking-wide disabled:opacity-50">{busy ? "PLEASE WAIT..." : registering ? "CREATE ACCOUNT" : "SIGN IN"}</button>
