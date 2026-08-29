@@ -50,6 +50,9 @@ export const authConfigured =
   !authDisabled && Boolean(grokClientId && grokClientSecret);
 
 const explicitBaseURL = env("BETTER_AUTH_URL");
+const PRODUCTION_ORIGINS: string[] = [
+  "https://gotcha.recreationeeraj.workers.dev",
+];
 const previewAllowedHosts: string[] = [...PREVIEW_ALLOWED_HOSTS];
 const LOCAL_DEV_ORIGINS: string[] = [
   "http://localhost:8080",
@@ -57,18 +60,31 @@ const LOCAL_DEV_ORIGINS: string[] = [
   "http://[::1]:8080",
 ];
 const baseURL = explicitBaseURL ?? {
-  allowedHosts: [...previewAllowedHosts, "localhost", "127.0.0.1", "[::1]"],
+  allowedHosts: [
+    ...previewAllowedHosts,
+    "localhost",
+    "127.0.0.1",
+    "[::1]",
+  ],
   protocol: "auto" as const,
   fallback: "http://localhost:8080",
 };
 
-const trustedOrigins: string[] = explicitBaseURL
-  ? [explicitBaseURL, ...LOCAL_DEV_ORIGINS]
-  : [
-      ...previewAllowedHosts,
-      ...previewAllowedHosts.flatMap((host) => [`https://${host}`, `http://${host}`]),
-      ...LOCAL_DEV_ORIGINS,
-    ];
+// Better Auth rejects state-changing requests (including sign-out) whose
+// Origin is not trusted. Always include the deployed Worker origin in addition
+// to any configured BETTER_AUTH_URL so production cookies and CSRF checks work.
+const trustedOrigins: string[] = [
+  ...new Set([
+    ...PRODUCTION_ORIGINS,
+    ...(explicitBaseURL ? [explicitBaseURL] : []),
+    ...previewAllowedHosts,
+    ...previewAllowedHosts.flatMap((host) => [
+      `https://${host}`,
+      `http://${host}`,
+    ]),
+    ...LOCAL_DEV_ORIGINS,
+  ]),
+];
 
 const databaseUrl = env("DATABASE_URL");
 
@@ -77,9 +93,6 @@ const grokAuthorizationUrl = `${issuerBase}/api/auth/oauth2/authorize`;
 const grokTokenUrl = `${issuerBase}/api/auth/oauth2/token`;
 const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
 
-// Production uses Neon's HTTP serverless driver through a Kysely dialect so
-// Better Auth never opens a TCP socket from the Cloudflare Worker. Preview keeps
-// the existing PGLite dialect so local development remains self-contained.
 const database = databaseUrl
   ? { dialect: neonDialect(databaseUrl), type: "postgres" as const }
   : { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const };
