@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { ArrowRight, Eye, EyeOff, Play, Sparkles } from "lucide-react";
 import { App } from "@/components/App";
 import { useGotcha } from "@/lib/store";
-import { authClient, authEnabled, signIn } from "@/lib/auth/client";
+import { authClient, signIn } from "@/lib/auth/client";
 import { GROK_PROVIDERS } from "@/lib/auth/providers";
 
 export function ExperienceGate() {
@@ -10,7 +10,7 @@ export function ExperienceGate() {
   const login = useGotcha((s) => s.login);
   const register = useGotcha((s) => s.register);
   const hydrateFromAuth = useGotcha((s) => s.hydrateFromAuth);
-  const { data: authSession, isPending } = authClient.useSession();
+  const { data: authSession } = authClient.useSession();
   const [entered, setEntered] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [email, setEmail] = useState("");
@@ -26,8 +26,10 @@ export function ExperienceGate() {
     }
   }, [authSession, sessionEmail, hydrateFromAuth]);
 
+  // Never block the entry experience while the remote auth session is loading or unavailable.
+  // Local email/password access remains available and the landing -> login -> dashboard flow works
+  // even when the Better Auth endpoint is temporarily unavailable.
   if (sessionEmail || authSession?.user?.email) return <App />;
-  if (isPending && authEnabled) return <LoadingScreen />;
   if (!entered) return <Landing onEnter={() => setEntered(true)} />;
 
   async function submit(e: FormEvent) {
@@ -100,5 +102,3 @@ export function ExperienceGate() {
 function Landing({ onEnter }: { onEnter: () => void }) {
   return <main className="relative min-h-dvh overflow-hidden bg-[#050912] text-white"><div className="absolute inset-0 opacity-30" style={{ backgroundImage: "linear-gradient(rgba(100,160,200,.08) 1px, transparent 1px), linear-gradient(90deg, rgba(100,160,200,.08) 1px, transparent 1px)", backgroundSize: "46px 46px" }} /><div className="absolute left-1/2 top-1/2 size-[50vw] -translate-x-1/2 -translate-y-1/2 rounded-full bg-cyan-400/10 blur-[120px]" /><div className="relative mx-auto flex min-h-dvh max-w-[1500px] flex-col items-center justify-center px-6 text-center"><div className="mb-10 text-[10px] font-semibold uppercase tracking-[.5em] text-cyan-300/80">THE HUNT ENDS HERE</div><div className="relative w-full overflow-hidden py-8"><div className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-[80%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-cyan-300/10" /><h1 className="select-none text-[clamp(5rem,17vw,15rem)] font-black leading-[.78] tracking-[-.075em] text-white drop-shadow-[0_0_45px_rgba(34,211,238,.18)]">GOTCHA</h1><div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-3 text-xs uppercase tracking-[.3em] text-slate-400"><span className="h-px w-12 bg-slate-700" />AI CAREER INTELLIGENCE<span className="h-px w-12 bg-slate-700" /></div></div><button type="button" onClick={onEnter} className="group mt-12 inline-flex items-center gap-4 rounded-full border border-cyan-300/40 bg-cyan-300/10 px-8 py-4 text-sm font-bold tracking-[.22em] text-white transition hover:scale-105 hover:bg-cyan-300/20">ENTER <ArrowRight className="size-4 transition group-hover:translate-x-1" /></button><p className="mt-5 text-xs text-slate-500">Your next opportunity starts here.</p></div></main>;
 }
-
-function LoadingScreen() { return <div className="grid min-h-dvh place-items-center bg-bg text-fg"><div className="text-center"><Sparkles className="mx-auto size-7 animate-pulse text-primary-3" /><p className="mt-3 text-xs text-muted">Loading Gotcha…</p></div></div>; }
