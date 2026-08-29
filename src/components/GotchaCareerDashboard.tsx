@@ -2,17 +2,20 @@ import { useMemo } from "react";
 import {
   Bot,
   CheckCircle2,
+  GraduationCap,
   Globe2,
   LayoutGrid,
   Radar,
   ShieldAlert,
   ShieldCheck,
   Sparkles,
+  Zap,
 } from "lucide-react";
 import { JOBS, type Job } from "@/lib/data";
 import {
   applicationAnalytics,
   careerHuntScore,
+  careerTwinSignals,
   scoreOpportunity,
   shieldAssessment,
 } from "@/lib/careerIntelligence";
@@ -59,6 +62,8 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
   const riskySignals = JOBS.filter((j) => shieldAssessment(j).level !== "low").length;
   const responseRate = analytics.responseRate || 22;
   const interviewRate = analytics.interviewRate || 45;
+  const twinSignals = user ? careerTwinSignals(user, applications, JOBS) : [];
+  const topGaps = user && topMatches[0] ? scoreOpportunity(topMatches[0].job, user).gaps : [];
 
   const recentActivity = user
     ? [
@@ -351,6 +356,48 @@ export function GotchaCareerDashboard({ onOpenJob }: { onOpenJob: (j: Job) => vo
             <p className="flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted"><Bot className="size-3 text-primary-3" /> Career Digital Twin</p>
             <p className="mt-1 text-2xl font-bold tracking-wide text-primary-3">Active</p>
             <p className="mt-1 text-[10px] leading-4 text-subtle">Profile, skills, applications and agent signals — one persistent career record.</p>
+          </button>
+        </div>
+
+        {twinSignals.length > 0 && (
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
+            {twinSignals.map((s, i) => (
+              <div key={i} className="rounded-lg border border-border bg-surface p-3">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "size-1.5 shrink-0 rounded-full",
+                      s.kind === "gap" ? "bg-red-400" : s.kind === "action" ? "bg-amber-400" : s.kind === "trend" ? "bg-sky-400" : "bg-emerald-400",
+                    )}
+                  />
+                  <p className="text-xs font-medium text-fg">{s.title}</p>
+                </div>
+                <p className="mt-1 pl-3 text-[10px] leading-4 text-muted">{s.detail}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <button type="button" onClick={() => setView(analytics.interviews ? "coach" : "search")} className="rounded-lg border border-border bg-surface p-3.5 text-left transition hover:bg-card-2">
+            <div className="flex items-center justify-between">
+              <Zap className="size-3.5 text-primary-3" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">{analytics.interviews ? "Prepare" : "Discover"}</span>
+            </div>
+            <p className="mt-2 text-xs font-semibold">Next Best Action</p>
+            <p className="mt-1 text-[10px] leading-4 text-subtle">
+              {analytics.interviews ? "You have interviews in your pipeline. Prepare before increasing application volume." : "Start with your highest-fit opportunity and tailor the application."}
+            </p>
+          </button>
+          <button type="button" onClick={() => setView("learn")} className="rounded-lg border border-border bg-surface p-3.5 text-left transition hover:bg-card-2">
+            <div className="flex items-center justify-between">
+              <GraduationCap className="size-3.5 text-primary-3" />
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-muted">{topGaps.length ? `${topGaps.length} gaps` : "Strong"}</span>
+            </div>
+            <p className="mt-2 text-xs font-semibold">Skill Advantage</p>
+            <p className="mt-1 text-[10px] leading-4 text-subtle">
+              {topGaps.length ? `Close: ${topGaps.join(", ")}.` : "Your current skills align strongly with the highest-ranked roles."}
+            </p>
           </button>
         </div>
       </section>
