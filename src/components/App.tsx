@@ -12,12 +12,6 @@ import {
   UserRound,
   Shield,
   Settings,
-  Play,
-  ArrowRight,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
   Menu,
   X,
   Brain,
@@ -27,7 +21,6 @@ import {
   Twitter,
   Youtube,
   Instagram,
-  ChevronRight,
   LogOut,
   Crosshair,
   Handshake,
@@ -45,7 +38,6 @@ import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { authClient, signIn as brokerSignIn, signOut as brokerSignOut, GROK_PROVIDERS } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
-import { provisionDemoUser, DEMO_EMAIL } from "@/lib/auth/bootstrap-demo";
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutGrid },
@@ -223,15 +215,11 @@ export function App() {
               >
                 <Settings className="size-4" />
               </button>
+              {user && <AccountMenu user={user} />}
             </div>
           </header>
 
-          <div
-            className={cn(
-              "grid min-h-0 flex-1 gap-4 px-4 pb-6 lg:px-6",
-              view === "dashboard" ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px]",
-            )}
-          >
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 px-4 pb-6 lg:px-6">
             <main className="min-w-0">
               {view === "dashboard" && <GotchaCareerDashboard onOpenJob={setJob} />}
               {view === "search" && <SearchPage onOpenJob={setJob} />}
@@ -247,7 +235,6 @@ export function App() {
               {view === "profile" && <ProfilePage />}
               {view === "admin" && <AdminPage />}
             </main>
-            {view !== "dashboard" && <RightRail />}
           </div>
 
           <footer className="mt-auto border-t border-border px-4 py-6 md:px-6">
@@ -803,182 +790,78 @@ function AdminPage() {
   );
 }
 
-function RightRail() {
-  const user = useSessionUser();
-  const setDemoOpen = useGotcha((s) => s.setDemoOpen);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [show, setShow] = useState(false);
-  const [err, setErr] = useState("");
+function AccountMenu({ user }: { user: { name: string; email: string } }) {
+  const [open, setOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
+  const [signOutError, setSignOutError] = useState(false);
   const logout = useGotcha((s) => s.logout);
-  const [busy, setBusy] = useState(false);
+  const initial = (user.name?.trim()?.[0] ?? user.email?.trim()?.[0] ?? "?").toUpperCase();
+
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("click", close);
+    return () => window.removeEventListener("click", close);
+  }, [open]);
+
+  async function handleSignOut() {
+    setSignOutError(false);
+    setSigningOut(true);
+    try {
+      await brokerSignOut();
+      // On success this navigates away; clear the persisted local
+      // view state right before that happens.
+      logout();
+    } catch {
+      // Deployed sessions ride an HttpOnly cookie only the server can
+      // clear — a failed/timed-out request means it's still live, so
+      // don't clear the local view and claim signed-out falsely.
+      // Surface it so the visitor knows to retry instead of assuming
+      // the button is broken.
+      setSigningOut(false);
+      setSignOutError(true);
+    }
+  }
 
   return (
-    <aside className="space-y-4">
-      <div className="rounded-xl border border-border bg-card p-4">
-        <h2 className="text-center text-lg font-semibold">
-          Experience <span className="text-primary-3">Gotcha</span>
-        </h2>
-        <p className="mt-1 text-center text-xs text-muted">before you get started</p>
-        <button
-          type="button"
-          onClick={() => setDemoOpen(true)}
-          className="mt-4 flex w-full items-center gap-3 rounded-lg bg-linear-to-r from-primary to-primary-2 px-3 py-3 text-left glow-primary"
+    <div className="relative" onClick={(e) => e.stopPropagation()}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-2 rounded-full border border-border bg-surface py-1 pl-1 pr-2.5 text-left hover:border-primary/40"
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/30 text-xs font-semibold text-primary-3">
+          {initial}
+        </span>
+        <span className="hidden leading-tight sm:block">
+          <span className="block max-w-[120px] truncate text-xs font-medium">{user.name}</span>
+        </span>
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-xl border border-border bg-card p-1 shadow-2xl"
         >
-          <span className="flex size-9 items-center justify-center rounded-full bg-fg/15">
-            <Play className="size-4 fill-current" />
-          </span>
-          <span className="flex-1">
-            <span className="block text-xs font-semibold tracking-wide">RUN 90-SECOND DEMO</span>
-            <span className="block text-[11px] text-fg/80">See how Gotcha finds the right opportunities for you</span>
-          </span>
-          <ChevronRight className="size-4" />
-        </button>
-      </div>
-
-      <div className="flex items-center gap-3 px-2 text-[11px] uppercase tracking-[0.2em] text-subtle">
-        <span className="h-px flex-1 bg-border" />
-        or
-        <span className="h-px flex-1 bg-border" />
-      </div>
-
-      <div className="rounded-xl border border-border bg-card p-4">
-        {user ? (
-          <div>
-            <p className="text-sm font-semibold">Welcome back</p>
-            <p className="mt-1 text-xs text-muted">{user.name}</p>
-            <p className="text-xs text-subtle">{user.email}</p>
-            <p className="mt-3 text-sm">{user.title}</p>
-            <button
-              type="button"
-              onClick={async () => {
-                try {
-                  await brokerSignOut();
-                  // On success this navigates away; clear the persisted local
-                  // view state right before that happens.
-                  logout();
-                } catch {
-                  // Deployed sessions ride an HttpOnly cookie only the server can
-                  // clear — a failed/timed-out request means it's still live, so
-                  // don't clear the local view and claim signed-out falsely.
-                  // The visitor can just press the button again.
-                }
-              }}
-              className="mt-4 w-full rounded-md border border-border py-2 text-sm"
-            >
-              Sign out
-            </button>
+          <div className="border-b border-border px-3 py-2.5">
+            <p className="truncate text-sm font-semibold">{user.name}</p>
+            <p className="truncate text-xs text-subtle">{user.email}</p>
           </div>
-        ) : (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setErr("");
-              setBusy(true);
-              try {
-                if (mode === "signup") {
-                  const { error } = await authClient.signUp.email({ email, password, name });
-                  if (error) setErr(error.message ?? "Sign-up failed");
-                  // On success authClient.useSession() picks up the new session and
-                  // the App-level bridge (hydrateFromAuth) routes to the dashboard.
-                  return;
-                }
-                let { error } = await authClient.signIn.email({ email, password });
-                if (error && email.trim().toLowerCase() === DEMO_EMAIL) {
-                  // Public demo credentials — provision the account on the real
-                  // backend the first time anyone signs in with them, then retry.
-                  await provisionDemoUser();
-                  ({ error } = await authClient.signIn.email({ email, password }));
-                }
-                if (error) setErr(error.message ?? "Invalid email or password");
-              } finally {
-                setBusy(false);
-              }
-            }}
-            className="space-y-3"
+          <button
+            type="button"
+            disabled={signingOut}
+            onClick={handleSignOut}
+            className="mt-1 flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-fg hover:bg-surface disabled:cursor-wait disabled:opacity-60"
           >
-            <h3 className="text-lg font-semibold">{mode === "signin" ? "Welcome Back!" : "Create your profile"}</h3>
-            <p className="text-xs text-muted">{mode === "signin" ? "Sign in to continue" : "Takes less than a minute"}</p>
-            {mode === "signup" && (
-              <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
-                <UserRound className="size-4 text-muted" />
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Full name"
-                  className="w-full bg-transparent text-sm outline-none"
-                />
-              </label>
-            )}
-            <SocialSignInButtons callbackURL="/" />
-            <div className="flex items-center gap-2 py-1 text-[10px] uppercase tracking-wider text-muted">
-              <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
-            </div>
-            <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
-              <Mail className="size-4 text-muted" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email Address"
-                className="w-full bg-transparent text-sm outline-none"
-                suppressHydrationWarning
-              />
-            </label>
-            <label className="flex items-center gap-2 rounded-md border border-border bg-input px-3 py-2.5">
-              <Lock className="size-4 text-muted" />
-              <input
-                type={show ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
-                className="w-full bg-transparent text-sm outline-none"
-                suppressHydrationWarning
-              />
-              <button type="button" onClick={() => setShow((s) => !s)} aria-label="Toggle password">
-                {show ? <EyeOff className="size-4 text-muted" /> : <Eye className="size-4 text-muted" />}
-              </button>
-            </label>
-            {mode === "signin" && (
-              <button type="button" className="text-xs text-primary-3">
-                Forgot Password?
-              </button>
-            )}
-            {err && <p className="text-xs text-danger">{err}</p>}
-            <button
-              type="submit"
-              disabled={busy}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold glow-primary disabled:opacity-60"
-            >
-              {busy ? "Please wait…" : mode === "signin" ? "SIGN IN" : "CREATE PROFILE"}{" "}
-              <ArrowRight className="size-4" />
-            </button>
-            {mode === "signin" ? (
-              <div>
-                <p className="mb-2 text-xs text-muted">New to Gotcha?</p>
-                <button
-                  type="button"
-                  onClick={() => setMode("signup")}
-                  className="flex w-full items-center justify-center gap-2 rounded-md border border-border py-3 text-sm font-medium"
-                >
-                  <UserRound className="size-4" /> CREATE YOUR PROFILE
-                </button>
-              </div>
-            ) : (
-              <button type="button" onClick={() => setMode("signin")} className="w-full text-xs text-primary-3">
-                Already have an account? Sign in
-              </button>
-            )}
-            <p className="flex items-center justify-center gap-1 text-[10px] text-subtle">
-              <Shield className="size-3" /> Your data is secure with enterprise-grade encryption
-            </p>
-            <p className="text-[10px] text-subtle">Demo: demo@gotecha.com / huntends</p>
-          </form>
-        )}
-      </div>
-    </aside>
+            <LogOut className="size-4" /> {signingOut ? "Signing out…" : "Sign out"}
+          </button>
+          {signOutError && (
+            <p className="px-3 pb-2 text-[11px] text-danger">Couldn't sign out — check your connection and try again.</p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
