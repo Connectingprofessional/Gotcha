@@ -45,7 +45,7 @@ import { buildMobilityAndCompContext, evaluateGlobalOpportunity } from "@/lib/gl
 import { evaluateCareerAutomation } from "@/lib/career/career-automation.ts";
 import { mapCandidateToRole, localInterviewPack } from "@/lib/market";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
-import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
+import { buildAgeingInsights, buildFunnel, compareSources, type CareerApplication } from "@/lib/careerSuite";
 import { authClient } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
@@ -459,6 +459,8 @@ function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
     })
     .filter((x): x is CareerApplication => x !== null);
   const ageing = buildAgeingInsights(careerApps).filter((i) => i.severity !== "normal");
+  const funnel = buildFunnel(careerApps).filter((f) => f.count > 0);
+  const sources = compareSources(careerApps);
 
   return (
     <div className="space-y-3">
@@ -485,6 +487,41 @@ function ApplicationsPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
               );
             })}
           </div>
+        </div>
+      )}
+
+      {(funnel.length > 0 || sources.length > 0) && (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {funnel.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="mb-2 text-sm font-medium">Pipeline funnel</p>
+              <div className="space-y-1.5">
+                {funnel.map((f) => (
+                  <div key={f.stage} className="flex items-center justify-between text-xs">
+                    <span className="capitalize text-muted">{f.stage.replace(/_/g, " ")}</span>
+                    <span className="font-medium">
+                      {f.count} <span className="text-subtle">({f.share}%)</span>
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {sources.length > 0 && (
+            <div className="rounded-xl border border-border bg-card p-4">
+              <p className="mb-2 text-sm font-medium">Source performance</p>
+              <div className="space-y-1.5">
+                {sources.map((s) => (
+                  <div key={s.source} className="flex items-center justify-between text-xs">
+                    <span className="text-muted">{s.source}</span>
+                    <span className="font-medium">
+                      {s.applications} applied · {s.responseRate}% response
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
