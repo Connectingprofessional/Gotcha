@@ -9,7 +9,11 @@ import { createAuthClient } from "better-auth/react";
  * server-side (see `server.ts`), via `authClient.signIn.email` /
  * `authClient.signIn.social`.
  */
-export const authClient = createAuthClient();
+export const authClient = createAuthClient({
+  baseURL:
+    import.meta.env.VITE_BETTER_AUTH_URL ||
+    window.location.origin,
+});
 
 /**
  * True when sign-in UI should be shown — i.e. whenever `VITE_AUTH_ENABLED` is
