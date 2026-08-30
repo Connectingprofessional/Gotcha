@@ -1,10 +1,9 @@
-```tsx
 import { createAuthClient } from "better-auth/react";
 
 /**
  * Better Auth client for the Gotcha application.
  *
- * Talks to this application's own Better Auth API at `/api/auth/*`.
+ * Talks to this application's own Better Auth API at /api/auth/*.
  * Authentication is handled natively by Better Auth using:
  * - Email/password
  * - Google OAuth
@@ -81,4 +80,3 @@ export async function signOut(
 
   window.location.href = redirectTo;
 }
-```
