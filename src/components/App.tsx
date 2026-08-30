@@ -27,7 +27,6 @@ import {
   Wand2,
   Bell,
   Send,
-  Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
@@ -204,15 +203,6 @@ export function App() {
             </button>
             <div className="hidden md:block" />
             <div className="ml-auto flex items-center gap-2">
-              {!user && (
-                <button
-                  type="button"
-                  onClick={() => useGotcha.getState().setAuthPrompt(true)}
-                  className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-violet-500"
-                >
-                  Sign in
-                </button>
-              )}
               <button
                 type="button"
                 onClick={() => useGotcha.getState().setAdminPrompt(true)}
@@ -301,7 +291,6 @@ export function App() {
       )}
       {job && <JobModal job={job} onClose={() => setJob(null)} />}
       <DemoModal />
-      <SignInGate />
       <AdminGate />
     </div>
   );
@@ -1236,161 +1225,6 @@ function DemoModal() {
             {step < steps.length - 1 ? "Next" : "Start hunting"}
           </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function GoogleGlyph() {
-  return (
-    <svg className="size-4" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.67-.22-2.45H12v4.64h6.47a5.54 5.54 0 0 1-2.4 3.63v3h3.88c2.27-2.09 3.57-5.17 3.57-8.82Z" />
-      <path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.95-2.91l-3.88-3c-1.08.73-2.46 1.15-4.07 1.15-3.13 0-5.78-2.11-6.73-4.96H1.27v3.11A12 12 0 0 0 12 24Z" />
-      <path fill="#FBBC05" d="M5.27 14.28A7.2 7.2 0 0 1 4.89 12c0-.79.14-1.56.38-2.28V6.61H1.27A12 12 0 0 0 0 12c0 1.94.46 3.77 1.27 5.39l4-3.11Z" />
-      <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.95 1.19 15.23 0 12 0A12 12 0 0 0 1.27 6.61l4 3.11C6.22 6.86 8.87 4.75 12 4.75Z" />
-    </svg>
-  );
-}
-
-/**
- * Regular-user sign-in/sign-up modal — email/password (native Better Auth,
- * `authClient.signIn.email` / `signUp.email`) plus native social sign-in
- * (`authClient.signIn.social`) for whichever providers have credentials
- * configured server-side (Google, GitHub — see `server.ts`).
- */
-function SignInGate() {
-  const open = useGotcha((s) => s.authPrompt);
-  const setAuthPrompt = useGotcha((s) => s.setAuthPrompt);
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [googleBusy, setGoogleBusy] = useState(false);
-  const [githubBusy, setGithubBusy] = useState(false);
-  if (!open) return null;
-
-  async function handleSocial(provider: "google" | "github", setBusyState: (busy: boolean) => void) {
-    setErr("");
-    setBusyState(true);
-    try {
-      const { error } = await authClient.signIn.social({ provider, callbackURL: "/" });
-      if (error) setErr(error.message ?? `${provider === "google" ? "Google" : "GitHub"} sign-in failed`);
-      // On success, Better Auth redirects the whole page to the provider —
-      // nothing else to do here; clearing busy only matters on the error path.
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : "Sign-in failed");
-    } finally {
-      setBusyState(false);
-    }
-  }
-
-  const handleGoogle = () => handleSocial("google", setGoogleBusy);
-  const handleGithub = () => handleSocial("github", setGithubBusy);
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
-      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-5">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-semibold">{mode === "signin" ? "Sign in to Gotcha" : "Create your account"}</h2>
-          <button type="button" onClick={() => setAuthPrompt(false)} aria-label="Close">
-            <X className="size-4" />
-          </button>
-        </div>
-
-        <button
-          type="button"
-          disabled={googleBusy}
-          onClick={handleGoogle}
-          className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium disabled:opacity-60"
-        >
-          <GoogleGlyph />
-          {googleBusy ? "Redirecting…" : "Continue with Google"}
-        </button>
-
-        <button
-          type="button"
-          disabled={githubBusy}
-          onClick={handleGithub}
-          className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium disabled:opacity-60"
-        >
-          <Github className="size-4" />
-          {githubBusy ? "Redirecting…" : "Continue with GitHub"}
-        </button>
-
-        <div className="my-3 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">
-          <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
-        </div>
-
-        <form
-          className="space-y-2"
-          onSubmit={async (e) => {
-            e.preventDefault();
-            setErr("");
-            setBusy(true);
-            try {
-              const { error } =
-                mode === "signup"
-                  ? await authClient.signUp.email({ name, email, password })
-                  : await authClient.signIn.email({ email, password });
-              if (error) {
-                setErr(error.message ?? (mode === "signup" ? "Could not create account" : "Sign-in failed"));
-                return;
-              }
-              setAuthPrompt(false);
-            } finally {
-              setBusy(false);
-            }
-          }}
-        >
-          {mode === "signup" && (
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Full name"
-              required
-              className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
-            />
-          )}
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email"
-            required
-            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
-            required
-            minLength={8}
-            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
-          />
-          {err && <p className="text-[11px] text-danger">{err}</p>}
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full rounded-md bg-violet-600 py-2 text-sm font-semibold text-white disabled:opacity-60"
-          >
-            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-        </form>
-
-        <button
-          type="button"
-          onClick={() => {
-            setErr("");
-            setMode((m) => (m === "signin" ? "signup" : "signin"));
-          }}
-          className="mt-3 w-full text-center text-xs text-muted hover:text-fg"
-        >
-          {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
-        </button>
       </div>
     </div>
   );
