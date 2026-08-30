@@ -158,15 +158,9 @@ function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-7 text-center text-sm text-gray-400">
-            Don't have an account?{" "}
-            <a
-              href="/register"
-              className="font-medium text-white hover:underline"
-            >
-              Create account
-            </a>
-          </div>
+          <div className="mt-7 text-center text-sm text-gray-500">
+  Don't have an account? Contact your administrator.
+</div>
         </div>
 
         <p className="mt-6 text-center text-xs text-gray-600">
