@@ -41,10 +41,6 @@ const googleClientId = env("GOOGLE_CLIENT_ID");
 const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
 export const googleAuthConfigured = Boolean(googleClientId && googleClientSecret);
 
-const githubClientId = env("GITHUB_CLIENT_ID");
-const githubClientSecret = env("GITHUB_CLIENT_SECRET");
-export const githubAuthConfigured = Boolean(githubClientId && githubClientSecret);
-
 const explicitBaseURL = env("BETTER_AUTH_URL");
 const PRODUCTION_ORIGINS: string[] = [
   "https://gotcha.recreationeeraj.workers.dev",
@@ -82,9 +78,6 @@ export const SESSION_TOKEN_COOKIE = "__Host-gotcha-auth.session_token";
 const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {
   ...(googleAuthConfigured
     ? { google: { clientId: googleClientId as string, clientSecret: googleClientSecret as string } }
-    : {}),
-  ...(githubAuthConfigured
-    ? { github: { clientId: githubClientId as string, clientSecret: githubClientSecret as string } }
     : {}),
 };
 
