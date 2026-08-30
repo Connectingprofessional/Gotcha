@@ -40,7 +40,7 @@ import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { scoreOpportunity } from "@/lib/careerIntelligence";
-import { authClient, signIn as brokerSignIn, signOut as brokerSignOut, GROK_PROVIDERS } from "@/lib/auth/client";
+import { authClient, signOut as brokerSignOut } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
@@ -203,6 +203,15 @@ export function App() {
             </button>
             <div className="hidden md:block" />
             <div className="ml-auto flex items-center gap-2">
+              {!user && (
+                <button
+                  type="button"
+                  onClick={() => useGotcha.getState().setAuthPrompt(true)}
+                  className="rounded-full bg-violet-600 px-4 py-1.5 text-xs font-semibold text-white hover:bg-violet-500"
+                >
+                  Sign in
+                </button>
+              )}
               <button
                 type="button"
                 onClick={() => useGotcha.getState().setAdminPrompt(true)}
@@ -291,6 +300,7 @@ export function App() {
       )}
       {job && <JobModal job={job} onClose={() => setJob(null)} />}
       <DemoModal />
+      <SignInGate />
       <AdminGate />
     </div>
   );
@@ -321,15 +331,20 @@ function SearchPage({ onOpenJob }: { onOpenJob: (j: Job) => void }) {
 
   async function runAi() {
     setBusy(true);
-    const res = await askGotcha({
-      data: {
-        prompt,
-        system:
-          "You are Gotcha AI Job Search. Return: 1) a Boolean/X-ray string 2) 4 suggested titles 3) a 3-line search strategy. Keep it tight.",
-      },
-    });
-    setBusy(false);
-    setAi(res.ok ? res.text : res.error);
+    try {
+      const res = await askGotcha({
+        data: {
+          prompt,
+          system:
+            "You are Gotcha AI Job Search. Return: 1) a Boolean/X-ray string 2) 4 suggested titles 3) a 3-line search strategy. Keep it tight.",
+        },
+      });
+      setAi(res.ok ? res.text : res.error);
+    } catch {
+      setAi("Something went wrong reaching the AI search. Please try again.");
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -538,9 +553,17 @@ function CoachPage() {
     setInput("");
     setMessages((m) => [...m, { role: "user", text }]);
     setBusy(true);
-    const res = await askGotcha({ data: { prompt: text } });
-    setBusy(false);
-    setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+    try {
+      const res = await askGotcha({ data: { prompt: text } });
+      setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+    } catch {
+      setMessages((m) => [
+        ...m,
+        { role: "bot", text: "Something went wrong reaching the AI coach. Please try again." },
+      ]);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -810,9 +833,21 @@ function AssistantButton() {
     setInput("");
     setMessages((m) => [...m, { role: "user", text }]);
     setBusy(true);
-    const res = await askGotcha({ data: { prompt: text } });
-    setBusy(false);
-    setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+    try {
+      const res = await askGotcha({ data: { prompt: text } });
+      setMessages((m) => [...m, { role: "bot", text: res.ok ? res.text : res.error }]);
+    } catch {
+      // askGotcha rejects on a network/transport failure (as opposed to a
+      // handled { ok: false } response) — without this catch, busy never
+      // clears and the panel is stuck on "Thinking…" forever with no
+      // indication anything went wrong.
+      setMessages((m) => [
+        ...m,
+        { role: "bot", text: "Something went wrong reaching the AI assistant. Please try again." },
+      ]);
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -1217,41 +1252,132 @@ function GoogleGlyph() {
 }
 
 /**
- * One button per upstream in `GROK_PROVIDERS`, signing in through the shared
- * Grok auth broker (`@/lib/auth/client`'s `signIn`) — the path that's actually
- * pre-wired with real credentials in live preview AND when deployed, unlike
- * a native `socialProviders` entry which needs this app's own client id/secret
- * set as env vars. See `providers.ts` to add an upstream once the broker
- * supports it.
+ * Regular-user sign-in/sign-up modal — email/password (native Better Auth,
+ * `authClient.signIn.email` / `signUp.email`) plus native Google
+ * (`authClient.signIn.social`). Deliberately does not use the Grok broker
+ * (`signIn` from `@/lib/auth/client`) — this app intentionally does not
+ * offer Grok as a login option.
  */
-function SocialSignInButtons({ callbackURL }: { callbackURL: string }) {
-  const [pending, setPending] = useState<string | null>(null);
+function SignInGate() {
+  const open = useGotcha((s) => s.authPrompt);
+  const setAuthPrompt = useGotcha((s) => s.setAuthPrompt);
+  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [googleBusy, setGoogleBusy] = useState(false);
+  if (!open) return null;
+
+  async function handleGoogle() {
+    setErr("");
+    setGoogleBusy(true);
+    try {
+      const { error } = await authClient.signIn.social({ provider: "google", callbackURL: "/" });
+      if (error) setErr(error.message ?? "Google sign-in failed");
+      // On success, Better Auth redirects the whole page to Google — nothing
+      // else to do here; setGoogleBusy(false) only matters on the error path.
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Google sign-in failed");
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
+
   return (
-    <div className="space-y-2">
-      {GROK_PROVIDERS.map((p) => (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
+      <div className="w-full max-w-sm rounded-xl border border-border bg-surface p-5">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="font-semibold">{mode === "signin" ? "Sign in to Gotcha" : "Create your account"}</h2>
+          <button type="button" onClick={() => setAuthPrompt(false)} aria-label="Close">
+            <X className="size-4" />
+          </button>
+        </div>
+
         <button
-          key={p.providerId}
           type="button"
-          disabled={pending !== null}
-          onClick={async () => {
-            setErr("");
-            setPending(p.providerId);
-            try {
-              await brokerSignIn(p.providerId, { callbackURL });
-            } catch (e) {
-              setErr(e instanceof Error ? e.message : "Sign-in failed");
-            } finally {
-              setPending(null);
-            }
-          }}
+          disabled={googleBusy}
+          onClick={handleGoogle}
           className="flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium disabled:opacity-60"
         >
-          {p.idp === "google" ? <GoogleGlyph /> : <Twitter className="size-4" />}
-          {pending === p.providerId ? "Redirecting…" : `Continue with ${p.label}`}
+          <GoogleGlyph />
+          {googleBusy ? "Redirecting…" : "Continue with Google"}
         </button>
-      ))}
-      {err && <p className="mt-1 text-[11px] text-danger">{err}</p>}
+
+        <div className="my-3 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">
+          <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
+        </div>
+
+        <form
+          className="space-y-2"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setErr("");
+            setBusy(true);
+            try {
+              const { error } =
+                mode === "signup"
+                  ? await authClient.signUp.email({ name, email, password })
+                  : await authClient.signIn.email({ email, password });
+              if (error) {
+                setErr(error.message ?? (mode === "signup" ? "Could not create account" : "Sign-in failed"));
+                return;
+              }
+              setAuthPrompt(false);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {mode === "signup" && (
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Full name"
+              required
+              className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
+            />
+          )}
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
+          />
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            minLength={8}
+            className="w-full rounded-md border border-border bg-input px-3 py-2 text-sm"
+          />
+          {err && <p className="text-[11px] text-danger">{err}</p>}
+          <button
+            type="submit"
+            disabled={busy}
+            className="w-full rounded-md bg-violet-600 py-2 text-sm font-semibold text-white disabled:opacity-60"
+          >
+            {busy ? "Please wait…" : mode === "signin" ? "Sign in" : "Create account"}
+          </button>
+        </form>
+
+        <button
+          type="button"
+          onClick={() => {
+            setErr("");
+            setMode((m) => (m === "signin" ? "signup" : "signin"));
+          }}
+          className="mt-3 w-full text-center text-xs text-muted hover:text-fg"
+        >
+          {mode === "signin" ? "New here? Create an account" : "Already have an account? Sign in"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -1274,10 +1400,6 @@ function AdminGate() {
           <button type="button" onClick={() => setAdminPrompt(false)} aria-label="Close">
             <X className="size-4" />
           </button>
-        </div>
-        <SocialSignInButtons callbackURL="/?authIntent=admin" />
-        <div className="my-2 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">
-          <div className="h-px flex-1 bg-border" /> or <div className="h-px flex-1 bg-border" />
         </div>
         <form
           className="space-y-2"
