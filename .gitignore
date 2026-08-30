@@ -22,6 +22,9 @@ npm-debug.log*
 .vscode/
 .idea/
 
+# Local dev state (pid/log files, local env overrides)
+.dev/
+
 # TanStack / router generated (regenerated on build, keep if you prefer committing it)
 # src/routeTree.gen.ts
 

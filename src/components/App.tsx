@@ -27,6 +27,7 @@ import {
   Wand2,
   Bell,
   Send,
+  Github,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { JOBS, LEARNING, MARKET, ROLES, INDUSTRIES, type Job, type Application } from "@/lib/data";
@@ -40,7 +41,7 @@ import { companyHealth, deriveCompanyProfile } from "@/lib/companyIntelligence";
 import { buildDevelopmentPlan } from "@/lib/careerDevelopment";
 import { buildAgeingInsights, type CareerApplication } from "@/lib/careerSuite";
 import { scoreOpportunity } from "@/lib/careerIntelligence";
-import { authClient, signOut as brokerSignOut } from "@/lib/auth/client";
+import { authClient, signOut } from "@/lib/auth/client";
 import { provisionAdmin } from "@/lib/auth/bootstrap-admin";
 
 const NAV: { id: ViewId; label: string; icon: typeof LayoutGrid; admin?: boolean }[] = [
@@ -1074,7 +1075,7 @@ function AccountMenu({ user }: { user: { name: string; email: string } }) {
     setSignOutError(false);
     setSigningOut(true);
     try {
-      await brokerSignOut();
+      await signOut();
       // On success this navigates away; clear the persisted local
       // view state right before that happens.
       logout();
@@ -1253,10 +1254,9 @@ function GoogleGlyph() {
 
 /**
  * Regular-user sign-in/sign-up modal — email/password (native Better Auth,
- * `authClient.signIn.email` / `signUp.email`) plus native Google
- * (`authClient.signIn.social`). Deliberately does not use the Grok broker
- * (`signIn` from `@/lib/auth/client`) — this app intentionally does not
- * offer Grok as a login option.
+ * `authClient.signIn.email` / `signUp.email`) plus native social sign-in
+ * (`authClient.signIn.social`) for whichever providers have credentials
+ * configured server-side (Google, GitHub — see `server.ts`).
  */
 function SignInGate() {
   const open = useGotcha((s) => s.authPrompt);
@@ -1268,22 +1268,26 @@ function SignInGate() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [githubBusy, setGithubBusy] = useState(false);
   if (!open) return null;
 
-  async function handleGoogle() {
+  async function handleSocial(provider: "google" | "github", setBusyState: (busy: boolean) => void) {
     setErr("");
-    setGoogleBusy(true);
+    setBusyState(true);
     try {
-      const { error } = await authClient.signIn.social({ provider: "google", callbackURL: "/" });
-      if (error) setErr(error.message ?? "Google sign-in failed");
-      // On success, Better Auth redirects the whole page to Google — nothing
-      // else to do here; setGoogleBusy(false) only matters on the error path.
+      const { error } = await authClient.signIn.social({ provider, callbackURL: "/" });
+      if (error) setErr(error.message ?? `${provider === "google" ? "Google" : "GitHub"} sign-in failed`);
+      // On success, Better Auth redirects the whole page to the provider —
+      // nothing else to do here; clearing busy only matters on the error path.
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Google sign-in failed");
+      setErr(e instanceof Error ? e.message : "Sign-in failed");
     } finally {
-      setGoogleBusy(false);
+      setBusyState(false);
     }
   }
+
+  const handleGoogle = () => handleSocial("google", setGoogleBusy);
+  const handleGithub = () => handleSocial("github", setGithubBusy);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-bg/75 p-4">
@@ -1303,6 +1307,16 @@ function SignInGate() {
         >
           <GoogleGlyph />
           {googleBusy ? "Redirecting…" : "Continue with Google"}
+        </button>
+
+        <button
+          type="button"
+          disabled={githubBusy}
+          onClick={handleGithub}
+          className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-border bg-input py-2.5 text-sm font-medium disabled:opacity-60"
+        >
+          <Github className="size-4" />
+          {githubBusy ? "Redirecting…" : "Continue with GitHub"}
         </button>
 
         <div className="my-3 flex items-center gap-2 text-[10px] uppercase tracking-wider text-muted">

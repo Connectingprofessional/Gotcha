@@ -1,35 +1,29 @@
 /**
  * Self-hosted Better Auth for THIS app (server-only).
  *
- * Pre-wired for live preview + deploy — do not rewrite this file. To enable
- * local email/password, flip the flag in `./email-password` only (see auth skill).
+ * Independent deploy (Cloudflare Worker) — no Grok Build broker, gate
+ * identity, or live-preview sandbox. Sign-in is native Better Auth only:
+ * email/password plus whichever social providers have credentials set
+ * (Google, GitHub). To enable local email/password, flip the flag in
+ * `./email-password` only.
  */
 import { betterAuth } from "better-auth";
-import { bearer, genericOAuth } from "better-auth/plugins";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { getCookie } from "@tanstack/react-start/server";
 import { randomBytes } from "node:crypto";
 import { ensureDbReady, getPglite } from "../db";
 import { emailAndPasswordEnabled } from "./email-password";
-import { GATE_PROVIDER_ID, gateIdentitySessions } from "./gate-session.server";
 import { neonDialect } from "./neon-dialect";
-import { GROK_PROVIDERS } from "./providers";
 import { pgliteDialect } from "./pglite-dialect";
-import {
-  GROK_ISSUER_DEFAULT,
-  PREVIEW_ALLOWED_HOSTS,
-  PREVIEW_CLIENT_ID,
-  PREVIEW_CLIENT_SECRET,
-} from "./preview";
 
 void ensureDbReady();
 
 const globalAuthRef = globalThis as typeof globalThis & {
-  __grokAuthPreviewSecret__?: string;
+  __gotchaAuthDevSecret__?: string;
 };
-function previewAuthSecret(): string {
-  globalAuthRef.__grokAuthPreviewSecret__ ??= randomBytes(32).toString("hex");
-  return globalAuthRef.__grokAuthPreviewSecret__;
+function devAuthSecret(): string {
+  globalAuthRef.__gotchaAuthDevSecret__ ??= randomBytes(32).toString("hex");
+  return globalAuthRef.__gotchaAuthDevSecret__;
 }
 
 const env = (key: string): string | undefined => {
@@ -38,34 +32,30 @@ const env = (key: string): string | undefined => {
 };
 
 const authDisabled = env("VITE_AUTH_ENABLED") === "false";
-const grokIssuer = env("GROK_AUTH_ISSUER") ?? GROK_ISSUER_DEFAULT;
-const grokClientId = env("GROK_AUTH_CLIENT_ID") ?? PREVIEW_CLIENT_ID;
-const grokClientSecret = env("GROK_AUTH_CLIENT_SECRET") ?? PREVIEW_CLIENT_SECRET;
+
+/** True whenever auth isn't explicitly turned off. Email/password is always
+ * available in that case; social providers layer on top when configured. */
+export const authConfigured = !authDisabled;
 
 const googleClientId = env("GOOGLE_CLIENT_ID");
 const googleClientSecret = env("GOOGLE_CLIENT_SECRET");
 export const googleAuthConfigured = Boolean(googleClientId && googleClientSecret);
 
-export const authConfigured =
-  !authDisabled && Boolean(grokClientId && grokClientSecret);
+const githubClientId = env("GITHUB_CLIENT_ID");
+const githubClientSecret = env("GITHUB_CLIENT_SECRET");
+export const githubAuthConfigured = Boolean(githubClientId && githubClientSecret);
 
 const explicitBaseURL = env("BETTER_AUTH_URL");
 const PRODUCTION_ORIGINS: string[] = [
   "https://gotcha.recreationeeraj.workers.dev",
 ];
-const previewAllowedHosts: string[] = [...PREVIEW_ALLOWED_HOSTS];
 const LOCAL_DEV_ORIGINS: string[] = [
   "http://localhost:8080",
   "http://127.0.0.1:8080",
   "http://[::1]:8080",
 ];
 const baseURL = explicitBaseURL ?? {
-  allowedHosts: [
-    ...previewAllowedHosts,
-    "localhost",
-    "127.0.0.1",
-    "[::1]",
-  ],
+  allowedHosts: ["localhost", "127.0.0.1", "[::1]"],
   protocol: "auto" as const,
   fallback: "http://localhost:8080",
 };
@@ -77,71 +67,43 @@ const trustedOrigins: string[] = [
   ...new Set([
     ...PRODUCTION_ORIGINS,
     ...(explicitBaseURL ? [explicitBaseURL] : []),
-    ...previewAllowedHosts,
-    ...previewAllowedHosts.flatMap((host) => [
-      `https://${host}`,
-      `http://${host}`,
-    ]),
     ...LOCAL_DEV_ORIGINS,
   ]),
 ];
 
 const databaseUrl = env("DATABASE_URL");
 
-const issuerBase = grokIssuer.replace(/\/+$/, "");
-const grokAuthorizationUrl = `${issuerBase}/api/auth/oauth2/authorize`;
-const grokTokenUrl = `${issuerBase}/api/auth/oauth2/token`;
-const grokUserInfoUrl = `${issuerBase}/api/auth/oauth2/userinfo`;
-
 const database = databaseUrl
   ? { dialect: neonDialect(databaseUrl), type: "postgres" as const }
   : { dialect: pgliteDialect(() => getPglite()), type: "postgres" as const };
 
-export const SESSION_TOKEN_COOKIE = "__Host-grok-auth.session_token";
+export const SESSION_TOKEN_COOKIE = "__Host-gotcha-auth.session_token";
 
-const grokOAuthPlugin = authConfigured
-  ? genericOAuth({
-      config: GROK_PROVIDERS.map(({ providerId, idp }) => ({
-        providerId,
-        clientId: grokClientId as string,
-        clientSecret: grokClientSecret as string,
-        authorizationUrl: grokAuthorizationUrl,
-        tokenUrl: grokTokenUrl,
-        userInfoUrl: grokUserInfoUrl,
-        scopes: ["openid", "profile", "email"],
-        authorizationUrlParams: { idp, prompt: "login" },
-      })),
-    })
-  : null;
+const socialProviders: Record<string, { clientId: string; clientSecret: string }> = {
+  ...(googleAuthConfigured
+    ? { google: { clientId: googleClientId as string, clientSecret: googleClientSecret as string } }
+    : {}),
+  ...(githubAuthConfigured
+    ? { github: { clientId: githubClientId as string, clientSecret: githubClientSecret as string } }
+    : {}),
+};
 
 export const auth = betterAuth({
   baseURL,
-  secret: env("BETTER_AUTH_SECRET") ?? previewAuthSecret(),
+  secret: env("BETTER_AUTH_SECRET") ?? devAuthSecret(),
   database,
   trustedOrigins,
   account: {
     encryptOAuthTokens: true,
     accountLinking: {
       enabled: true,
-      trustedProviders: [
-        ...GROK_PROVIDERS.map((p) => p.providerId),
-        GATE_PROVIDER_ID,
-      ],
+      trustedProviders: Object.keys(socialProviders),
       requireLocalEmailVerified: false,
     },
   },
   session: { cookieCache: { enabled: true, maxAge: 300 } },
   ...(emailAndPasswordEnabled ? { emailAndPassword: { enabled: true } } : {}),
-  ...(googleAuthConfigured
-    ? {
-        socialProviders: {
-          google: {
-            clientId: googleClientId as string,
-            clientSecret: googleClientSecret as string,
-          },
-        },
-      }
-    : {}),
+  ...(Object.keys(socialProviders).length > 0 ? { socialProviders } : {}),
   user: {
     additionalFields: {
       isAdmin: {
@@ -157,21 +119,14 @@ export const auth = betterAuth({
     defaultCookieAttributes: { secure: true, sameSite: "lax", path: "/" },
     cookies: {
       session_token: { name: SESSION_TOKEN_COOKIE },
-      session_data: { name: "__Host-grok-auth.session_data" },
-      account_data: { name: "__Host-grok-auth.account_data" },
-      dont_remember: { name: "__Host-grok-auth.dont_remember" },
+      session_data: { name: "__Host-gotcha-auth.session_data" },
+      account_data: { name: "__Host-gotcha-auth.account_data" },
+      dont_remember: { name: "__Host-gotcha-auth.dont_remember" },
     },
   },
-  plugins: [
-    gateIdentitySessions(),
-    ...(grokOAuthPlugin ? [grokOAuthPlugin] : []),
-    bearer(),
-    tanstackStartCookies(),
-  ],
+  plugins: [tanstackStartCookies()],
 });
 
 export function readSessionToken(): string | null {
   return getCookie(SESSION_TOKEN_COOKIE) ?? null;
 }
-
-export { GROK_PROVIDERS } from "./providers";

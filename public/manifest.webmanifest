@@ -1,0 +1,17 @@
+{
+  "name": "Gotcha — The Hunt Ends Here",
+  "short_name": "Gotcha",
+  "description": "AI job search and career intelligence that finds where you fit.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070B16",
+  "theme_color": "#070B16",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
